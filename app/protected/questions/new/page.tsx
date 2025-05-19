@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function NewQuestionPage(props: {
-  searchParams: Promise<Message>;
+  searchParams: Message;
 }) {
   const userData = await getUserProfile();
-  const searchParams = await props.searchParams;
+  const searchParams = props.searchParams;
   
   // ユーザーがログインしていない場合はログインページにリダイレクト
   if (!userData) {
