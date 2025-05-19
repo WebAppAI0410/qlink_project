@@ -1,0 +1,21 @@
+{
+    "mcpServers": {
+      "supabase": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--access-token",
+          "sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56"
+        ]
+      },
+      "github": { 
+            "command": "npx", 
+            "args": ["-y", "@modelcontextprotocol/server-github"], 
+            "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "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", 
+            "GITHUB_REPOSITORY": "qlink_project", 
+            "GITHUB_USERNAME": "WebAppAI0410" 
+            } 
+        } 
+    }
+  }
