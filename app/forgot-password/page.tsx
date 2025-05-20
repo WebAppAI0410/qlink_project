@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export default async function ForgotPasswordPage({
-  searchParams,
-}: {
-  searchParams: { error?: string; message?: string }
-}) {
-  const error = searchParams.error
-  const message = searchParams.message
+interface ForgotPasswordPageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function ForgotPasswordPage({ searchParams }: ForgotPasswordPageProps) {
+  const error = searchParams?.error as string | undefined
+  const message = searchParams?.message as string | undefined
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   
   return (
