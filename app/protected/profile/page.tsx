@@ -15,7 +15,7 @@ export default async function ProfilePage(props: {
   
   // ユーザーがログインしていない場合はログインページにリダイレクト
   if (!userData) {
-    redirect("/sign-in");
+    redirect("/login");
   }
   
   const { user, profile } = userData;

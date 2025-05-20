@@ -1,3 +1,5 @@
+import { User } from "@supabase/supabase-js";
+
 // Supabase Auth関連の型
 export type AuthUser = {
   id: string;
@@ -8,19 +10,20 @@ export type AuthUser = {
 };
 
 // プロフィール関連の型
-export type Profile = {
+export interface Profile {
   id: string;
   username: string;
   display_name?: string;
   profile_pic_url?: string;
   created_at: string;
+  updated_at?: string;
   auth_source: 'email' | 'google' | 'twitter';
   is_premium: boolean;
   last_login?: string;
-};
+}
 
 // 質問関連の型
-export type Question = {
+export interface Question {
   id: string;
   short_id: string;
   content: string;
@@ -29,21 +32,21 @@ export type Question = {
   is_open: boolean;
   best_answer_id?: string;
   user?: Profile;
-  answers?: Answer[];
   _count?: {
     answers: number;
   };
-};
+}
 
 // 回答関連の型
-export type Answer = {
+export interface Answer {
   id: string;
+  short_id: string;
   content: string;
   question_id: string;
   created_at: string;
   is_hidden: boolean;
   ip_address?: string;
-};
+}
 
 // 通知関連の型
 export type Notification = {

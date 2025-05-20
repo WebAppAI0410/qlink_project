@@ -1,6 +1,6 @@
 import { getQuestionById, getQuestionAnswers } from "@/utils/questions";
 import { getUserProfile } from "@/utils/user";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { updateQuestionStatusAction, setBestAnswerAction, toggleAnswerVisibilityAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FormMessage, Message } from "@/components/form-message";
 import { Share2Icon, CheckCircleIcon, EyeIcon, EyeOffIcon, Edit3Icon } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 export default async function QuestionDetailPage(props: {
   params: Promise<{ id: string }>;
