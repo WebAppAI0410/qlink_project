@@ -6,11 +6,14 @@ import { Label } from "@/components/ui/label";
 import { SocialLoginForm } from "@/components/social-login-form";
 import Link from "next/link";
 import { SmtpMessage } from "../smtp-message";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default async function Signup(props: {
-  searchParams: Promise<Message>;
+  searchParams: Promise<Message & { authError?: string }>;
 }) {
   const searchParams = await props.searchParams;
+  const authError = searchParams.authError;
+  
   if ("message" in searchParams) {
     return (
       <div className="w-full flex-1 flex items-center h-screen sm:max-w-md justify-center gap-2 p-4">
@@ -29,6 +32,13 @@ export default async function Signup(props: {
             ログイン
           </Link>
         </p>
+        
+        {authError && (
+          <Alert className="mt-4 bg-red-50 text-red-800 border-red-200">
+            <AlertTitle>認証エラー</AlertTitle>
+            <AlertDescription>{decodeURIComponent(authError)}</AlertDescription>
+          </Alert>
+        )}
         
         {/* ソーシャルログインセクション */}
         <div className="flex flex-col gap-4 mt-6">

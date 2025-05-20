@@ -5,9 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SocialLoginForm } from "@/components/social-login-form";
 import Link from "next/link";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
-export default async function Login(props: { searchParams: Promise<Message> }) {
+export default async function Login(props: { 
+  searchParams: Promise<Message & { authError?: string }> 
+}) {
   const searchParams = await props.searchParams;
+  const authError = searchParams.authError;
+  
   return (
     <div className="flex-1 flex flex-col min-w-64">
       <h1 className="text-2xl font-medium">ログイン</h1>
@@ -17,6 +22,13 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
           新規登録
         </Link>
       </p>
+      
+      {authError && (
+        <Alert className="mt-4 bg-red-50 text-red-800 border-red-200">
+          <AlertTitle>認証エラー</AlertTitle>
+          <AlertDescription>{decodeURIComponent(authError)}</AlertDescription>
+        </Alert>
+      )}
       
       {/* ソーシャルログインセクション */}
       <div className="flex flex-col gap-4 mt-6">

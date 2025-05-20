@@ -13,8 +13,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Qlink - 匿名Q&Aプラットフォーム",
+  description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
 };
 
 export default function RootLayout({

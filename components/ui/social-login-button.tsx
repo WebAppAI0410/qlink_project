@@ -6,6 +6,7 @@ interface SocialLoginButtonProps {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
 export function SocialLoginButton({
@@ -13,6 +14,7 @@ export function SocialLoginButton({
   children,
   className,
   onClick,
+  disabled,
 }: SocialLoginButtonProps) {
   return (
     <Button
@@ -20,6 +22,7 @@ export function SocialLoginButton({
       variant="outline"
       className={`flex items-center gap-2 w-full ${className}`}
       onClick={onClick}
+      disabled={disabled}
     >
       {provider === "google" && (
         <svg
