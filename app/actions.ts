@@ -16,7 +16,7 @@ export const updateProfileAction = async (formData: FormData) => {
   
   const username = formData.get("username")?.toString();
   const displayName = formData.get("display_name")?.toString() || null;
-  
+
   // ユーザー名の検証
   if (!username || username.length < 3) {
     return redirect('/protected/profile?error=ユーザー名は3文字以上必要です');
@@ -50,11 +50,11 @@ export const updateProfileAction = async (formData: FormData) => {
         id: user.id,
         username,
         display_name: displayName,
-      });
+  });
       
     error = insertError;
   }
-  
+
   if (error) {
     if (error.code === "23505") { // 一意性制約違反エラーコード
       return redirect('/protected/profile?error=このユーザー名は既に使用されています');
@@ -99,12 +99,12 @@ export const createQuestionAction = async (formData: FormData) => {
     })
     .select()
     .single();
-  
+
   if (error) {
     console.error(error);
     return redirect('/protected/questions/new?error=質問の作成に失敗しました');
   }
-  
+
   return redirect(`/protected/questions/${question.id}`);
 };
 
@@ -123,7 +123,7 @@ export const updateQuestionStatusAction = async (formData: FormData) => {
   if (!questionId) {
     return redirect('/dashboard?error=質問IDが必要です');
   }
-  
+
   // 質問の所有者を確認
   const { data: question } = await supabase
     .from("questions")
@@ -140,7 +140,7 @@ export const updateQuestionStatusAction = async (formData: FormData) => {
     .from("questions")
     .update({ is_open: isOpen })
     .eq("id", questionId);
-  
+
   if (error) {
     console.error(error);
     return redirect(`/protected/questions/${questionId}?error=質問ステータスの更新に失敗しました`);
@@ -165,7 +165,7 @@ export const setBestAnswerAction = async (formData: FormData) => {
   if (!questionId || !answerId) {
     return redirect('/dashboard?error=質問IDと回答IDが必要です');
   }
-  
+
   // 質問の所有者を確認
   const { data: question } = await supabase
     .from("questions")
@@ -195,11 +195,11 @@ export const setBestAnswerAction = async (formData: FormData) => {
 // 匿名回答作成アクション
 export const createAnonymousAnswerAction = async (formData: FormData) => {
   const supabase = await createClient();
-  
+
   const content = formData.get("content")?.toString();
   const questionId = formData.get("question_id")?.toString();
   const shortId = formData.get("short_id")?.toString();
-  
+
   if (!content || content.trim().length === 0) {
     return redirect(`/q/${shortId}?error=回答内容を入力してください`);
   }
@@ -211,7 +211,7 @@ export const createAnonymousAnswerAction = async (formData: FormData) => {
   if (!questionId || !shortId) {
     return redirect(`/q/${shortId}?error=質問情報が不足しています`);
   }
-  
+
   // 質問が存在し、回答受付中か確認
   const { data: question } = await supabase
     .from("questions")
@@ -235,13 +235,13 @@ export const createAnonymousAnswerAction = async (formData: FormData) => {
       question_id: questionId,
       short_id: answerShortId,
       ip_address: '0.0.0.0' // 実際の実装ではIPアドレスを取得するロジックが必要
-    });
-  
+  });
+
   if (error) {
     console.error(error);
     return redirect(`/q/${shortId}?error=回答の投稿に失敗しました`);
   }
-  
+
   return redirect(`/q/${shortId}/thanks`);
 };
 
