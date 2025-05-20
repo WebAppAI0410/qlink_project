@@ -11,7 +11,7 @@ export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const supabase = await createClient();
-  const origin = nextHeaders().get("origin");
+  const origin = (await nextHeaders()).get("origin");
 
   if (!email || !password) {
     return encodedRedirect(
@@ -61,7 +61,7 @@ export const signInAction = async (formData: FormData) => {
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const supabase = await createClient();
-  const origin = nextHeaders().get("origin");
+  const origin = (await nextHeaders()).get("origin");
   const callbackUrl = formData.get("callbackUrl")?.toString();
 
   if (!email) {
@@ -140,7 +140,7 @@ export const signInWithSocialProvider = async (
 ) => {
   const provider = formData.get("provider") as "google" | "twitter";
   const supabase = await createClient();
-  const origin = nextHeaders().get("origin");
+  const origin = (await nextHeaders()).get("origin");
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -292,7 +292,7 @@ export const createAnonymousAnswerAction = async (formData: FormData) => {
   }
   
   // IPアドレスを取得（オプション） - Server Actions内では直接取得が難しいため一旦コメントアウト
-  // const headersList = nextHeaders(); 
+  // const headersList = await nextHeaders(); 
   // const ip = headersList.get("x-forwarded-for") || "unknown";
   const ip = "unknown"; // 一時的にunknownで設定
   
