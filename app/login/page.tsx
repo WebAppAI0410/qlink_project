@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { error?: string; message?: string }
-}) {
-  const error = searchParams.error
-  const message = searchParams.message
+interface LoginPageProps {
+  searchParams: Promise<{ error?: string; message?: string }>;
+}
+
+export default async function LoginPage({ searchParams: searchParamsPromise }: LoginPageProps) {
+  const searchParams = await searchParamsPromise;
+  const error = searchParams?.error;
+  const message = searchParams?.message;
   
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
