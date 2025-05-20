@@ -10,10 +10,10 @@ import { notFound } from "next/navigation";
 
 export default async function AnonymousAnswerPage(props: {
   params: Promise<{ shortId: string }>;
-  searchParams: { message?: string; success?: string };
+  searchParams: Promise<{ message?: string; success?: string }>;
 }) {
   const { shortId } = await props.params;
-  const searchParams = props.searchParams;
+  const searchParams = await props.searchParams;
   const question = await getQuestionByShortId(shortId);
 
   if (!question || !question.is_open) {
