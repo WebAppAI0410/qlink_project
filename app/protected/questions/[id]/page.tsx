@@ -11,10 +11,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function QuestionDetailPage(props: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   searchParams: Promise<Message>;
 }) {
-  const { id } = props.params;
+  const resolvedParams = await props.params;
+  const { id } = resolvedParams;
   const searchParams = await props.searchParams;
   const userData = await getUserProfile();
 
