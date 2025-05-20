@@ -21,7 +21,7 @@ export default async function Signup(props: {
 
   return (
     <>
-      <form className="flex flex-col min-w-64 max-w-64 mx-auto">
+      <div className="flex flex-col min-w-64 max-w-64 mx-auto">
         <h1 className="text-2xl font-medium">新規登録</h1>
         <p className="text-sm text text-foreground">
           すでにアカウントをお持ちの方は{" "}
@@ -62,7 +62,7 @@ export default async function Signup(props: {
         </div>
         
         {/* メールアドレスでの登録 */}
-        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-4">
+        <form action={signUpAction} className="flex flex-col gap-2 [&>input]:mb-3 mt-4">
           <Label htmlFor="email">メールアドレス</Label>
           <Input name="email" placeholder="you@example.com" required />
           <Label htmlFor="password">パスワード</Label>
@@ -73,12 +73,12 @@ export default async function Signup(props: {
             minLength={6}
             required
           />
-          <SubmitButton formAction={signUpAction} pendingText="登録中...">
+          <SubmitButton pendingText="登録中...">
             登録する
           </SubmitButton>
           <FormMessage message={searchParams} />
-        </div>
-      </form>
+        </form>
+      </div>
       <SmtpMessage />
     </>
   );

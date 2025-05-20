@@ -9,7 +9,7 @@ import Link from "next/link";
 export default async function Login(props: { searchParams: Promise<Message> }) {
   const searchParams = await props.searchParams;
   return (
-    <form className="flex-1 flex flex-col min-w-64">
+    <div className="flex-1 flex flex-col min-w-64">
       <h1 className="text-2xl font-medium">ログイン</h1>
       <p className="text-sm text-foreground">
         アカウントをお持ちでない場合は{" "}
@@ -50,7 +50,7 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
       </div>
       
       {/* 従来のメールログイン */}
-      <div className="flex flex-col gap-2 [&>input]:mb-3 mt-4">
+      <form action={signInAction} className="flex flex-col gap-2 [&>input]:mb-3 mt-4">
         <Label htmlFor="email">メールアドレス</Label>
         <Input name="email" placeholder="you@example.com" required />
         <div className="flex justify-between items-center">
@@ -68,11 +68,11 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
           placeholder="パスワード"
           required
         />
-        <SubmitButton pendingText="ログイン中..." formAction={signInAction}>
+        <SubmitButton pendingText="ログイン中...">
           ログイン
         </SubmitButton>
         <FormMessage message={searchParams} />
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
