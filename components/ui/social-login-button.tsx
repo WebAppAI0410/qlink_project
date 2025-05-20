@@ -5,18 +5,21 @@ interface SocialLoginButtonProps {
   provider: "google" | "twitter";
   children: ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
 export function SocialLoginButton({
   provider,
   children,
   className,
+  onClick,
 }: SocialLoginButtonProps) {
   return (
     <Button
       type="submit"
       variant="outline"
       className={`flex items-center gap-2 w-full ${className}`}
+      onClick={onClick}
     >
       {provider === "google" && (
         <svg

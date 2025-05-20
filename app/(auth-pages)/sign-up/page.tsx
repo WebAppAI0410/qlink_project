@@ -1,9 +1,9 @@
-import { signUpAction, signInWithSocialProvider } from "@/app/actions";
+import { signUpAction } from "@/app/actions";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SocialLoginButton } from "@/components/ui/social-login-button";
+import { SocialLoginForm } from "@/components/social-login-form";
 import Link from "next/link";
 import { SmtpMessage } from "../smtp-message";
 
@@ -33,19 +33,8 @@ export default async function Signup(props: {
         {/* ソーシャルログインセクション */}
         <div className="flex flex-col gap-4 mt-6">
           <div className="grid grid-cols-1 gap-2">
-            <form action={signInWithSocialProvider}>
-              <input type="hidden" name="provider" value="google" />
-              <SocialLoginButton provider="google">
-                Googleで登録
-              </SocialLoginButton>
-            </form>
-            
-            <form action={signInWithSocialProvider}>
-              <input type="hidden" name="provider" value="twitter" />
-              <SocialLoginButton provider="twitter">
-                Xで登録
-              </SocialLoginButton>
-            </form>
+            <SocialLoginForm provider="google" />
+            <SocialLoginForm provider="twitter" />
           </div>
           
           {/* 区切り線 */}
