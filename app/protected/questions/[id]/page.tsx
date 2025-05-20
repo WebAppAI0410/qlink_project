@@ -12,10 +12,10 @@ import { notFound } from "next/navigation";
 
 export default async function QuestionDetailPage(props: {
   params: { id: string };
-  searchParams: Message;
+  searchParams: Promise<Message>;
 }) {
   const { id } = props.params;
-  const searchParams = props.searchParams;
+  const searchParams = await props.searchParams;
   const userData = await getUserProfile();
 
   if (!userData) {
