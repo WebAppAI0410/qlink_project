@@ -15,40 +15,37 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
       setIsLoading(true);
       setError(null);
       
-      // デバッグ情報をコンソールに出力
       console.log('ソーシャルログイン開始:', provider);
       const redirectUrl = `${window.location.origin}/auth/callback`;
-      console.log('リダイレクトURL:', redirectUrl);
+      console.log('リダイレクトURL (アプリケーション側):', redirectUrl);
       
-      // Supabaseのクライアントサイドでサインイン
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data, error: signInError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: redirectUrl,
           skipBrowserRedirect: false,
-          // Google Profile情報を取得するための追加スコープ
           scopes: provider === 'google' ? 'profile email' : undefined
         },
       });
       
-      if (error) {
-        console.error('認証エラー:', error);
-        setError(`認証エラー: ${error.message}`);
-        throw error;
+      if (signInError) {
+        console.error('認証エラー (signInWithOAuth):', signInError);
+        setError(`認証エラー: ${signInError.message} (コード: ${signInError.code || 'N/A'})`);
+        return; 
       }
 
-      console.log('サインインデータ:', data);
+      console.log('サインインデータ (signInWithOAuth):', data);
       
-      // OAuthプロバイダーのURLにリダイレクト
       if (data?.url) {
-        console.log('リダイレクト先URL:', data.url);
+        console.log('Google認証ページへのリダイレクト先URL:', data.url);
         window.location.href = data.url;
       } else {
-        setError('リダイレクトURLが取得できませんでした');
+        console.error('リダイレクトURLが取得できませんでした。signInWithOAuthからのdata:', data);
+        setError('リダイレクトURLが取得できませんでした。Supabaseからの応答を確認してください。');
       }
     } catch (error: any) {
-      console.error('ソーシャルログインエラー:', error);
-      setError(`エラーが発生しました: ${error?.message || '不明なエラー'}`);
+      console.error('ソーシャルログインエラー (catchブロック):', error);
+      setError(`予期せぬエラーが発生しました: ${error?.message || '不明なエラー'}`);
     } finally {
       setIsLoading(false);
     }
