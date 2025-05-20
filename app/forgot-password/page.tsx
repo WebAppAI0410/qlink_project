@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 interface ForgotPasswordPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ error?: string; message?: string }>;
 }
 
-export default async function ForgotPasswordPage({ searchParams }: ForgotPasswordPageProps) {
-  const error = searchParams?.error as string | undefined
-  const message = searchParams?.message as string | undefined
+export default async function ForgotPasswordPage({ searchParams: searchParamsPromise }: ForgotPasswordPageProps) {
+  const searchParams = await searchParamsPromise;
+  const error = searchParams?.error;
+  const message = searchParams?.message;
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   
   return (
