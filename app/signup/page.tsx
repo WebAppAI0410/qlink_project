@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 
-export default function SignUpPage({
-  searchParams,
-}: {
-  searchParams: { error?: string }
-}) {
-  const error = searchParams.error
+interface SignUpPageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+export default async function SignUpPage({ searchParams: searchParamsPromise }: SignUpPageProps) {
+  const searchParams = await searchParamsPromise;
+  const error = searchParams?.error;
   
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
