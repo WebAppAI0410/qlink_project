@@ -2,8 +2,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import AuthButton from "@/components/auth-button";
-import Link from "next/link";
+import Header from "@/components/layout/header";
+import { createClient } from '@/utils/supabase/server'
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -30,11 +30,14 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
   return (
     <html lang="ja" className={inter.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
@@ -44,16 +47,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen flex flex-col items-center">
-            <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-              <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
-                <Link href="/" className="font-bold text-xl">
-                  Qlink
-                </Link>
-                <AuthButton />
-              </div>
-            </nav>
-            {children}
+          <main className="min-h-screen flex flex-col">
+            <Header user={user} />
+            <div className="flex-1">
+              {children}
+            </div>
           </main>
           <Toaster />
         </ThemeProvider>

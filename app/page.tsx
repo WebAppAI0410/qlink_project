@@ -1,7 +1,17 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default async function Home() {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    return redirect('/dashboard')
+  }
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-12 px-4 py-16">
       <div className="text-center space-y-4">
@@ -12,9 +22,14 @@ export default async function Home() {
           匿名で気軽に質問し、みんなの意見を集めましょう。あなたの疑問や興味を共有し、新しい発見があるかもしれません。
         </p>
       </div>
-      <Button asChild size="lg">
-        <Link href="/protected/questions/new">新しい質問を作成する</Link>
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button asChild size="lg">
+          <Link href="/login">ログイン</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link href="/signup">新規登録</Link>
+        </Button>
+      </div>
     </div>
-  );
-}
+  )
+} 

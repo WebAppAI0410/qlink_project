@@ -17,7 +17,7 @@ export default async function Dashboard() {
   
   // ユーザーの質問一覧を取得
   const questions = await getUserQuestions(user.id);
-  
+
   return (
     <div className="container max-w-4xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -77,10 +77,10 @@ export default async function Dashboard() {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MailIcon size={14} />
                 <span>{question._count?.answers || 0} 件の回答</span>
-              </div>
+      </div>
             </Link>
           ))}
-        </div>
+      </div>
       )}
     </div>
   );
