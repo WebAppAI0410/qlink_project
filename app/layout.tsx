@@ -15,6 +15,19 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Qlink - 匿名Q&Aプラットフォーム",
   description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
+  openGraph: {
+    title: "Qlink - 匿名Q&Aプラットフォーム",
+    description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
+    url: defaultUrl,
+    siteName: "Qlink",
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Qlink - 匿名Q&Aプラットフォーム",
+    description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
+  },
 };
 
 export default function RootLayout({

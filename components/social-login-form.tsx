@@ -16,8 +16,11 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
       setError(null);
       
       console.log('ソーシャルログイン開始:', provider);
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      const currentUrl = window.location.origin;
+      const redirectUrl = `${currentUrl}/auth/callback`;
+      
       console.log('リダイレクトURL (アプリケーション側):', redirectUrl);
+      console.log('サイトオリジン:', currentUrl);
       
       const { data, error: signInError } = await supabase.auth.signInWithOAuth({
         provider,
@@ -29,8 +32,18 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
       });
       
       if (signInError) {
-        console.error('認証エラー (signInWithOAuth):', signInError);
-        setError(`認証エラー: ${signInError.message} (コード: ${signInError.code || 'N/A'})`);
+        console.error('認証エラー (signInWithOAuth):', {
+          message: signInError.message,
+          code: signInError.code || 'コードなし',
+          stack: signInError.stack
+        });
+        
+        let errorMessage = `認証エラー: ${signInError.message}`;
+        if (signInError.message.includes('provider')) {
+          errorMessage = 'このプロバイダーは現在使用できません。管理者にGoogle認証の設定を確認してもらってください。';
+        }
+        
+        setError(errorMessage);
         return; 
       }
 
@@ -40,20 +53,24 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
         console.log('Google認証ページへのリダイレクト先URL:', data.url);
         window.location.href = data.url;
       } else {
-        console.error('リダイレクトURLが取得できませんでした。signInWithOAuthからのdata:', data);
-        setError('リダイレクトURLが取得できませんでした。Supabaseからの応答を確認してください。');
+        console.error('リダイレクトURLが取得できませんでした', data);
+        setError('認証プロセスの初期化に失敗しました。Supabaseプロジェクト設定を確認してください。');
       }
     } catch (error: any) {
-      console.error('ソーシャルログインエラー (catchブロック):', error);
-      setError(`予期せぬエラーが発生しました: ${error?.message || '不明なエラー'}`);
+      console.error('ソーシャルログインエラー (catch):', error);
+      setError(`予期せぬエラーが発生しました: ${error?.message || '詳細不明'}`);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 5000);
     }
   };
 
   const label = provider === 'google' ? 'Googleでログイン' : 'Xでログイン';
   const signUpLabel = provider === 'google' ? 'Googleで登録' : 'Xで登録';
-  const displayLabel = window.location.pathname.includes('sign-up') ? signUpLabel : label;
+  const displayLabel = typeof window !== 'undefined' && window.location.pathname.includes('sign-up') 
+    ? signUpLabel 
+    : label;
 
   return (
     <div className="w-full">
