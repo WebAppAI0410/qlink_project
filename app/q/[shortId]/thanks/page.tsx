@@ -3,7 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { CheckCircle2Icon } from "lucide-react";
 
-export default function AnswerThanksPage() {
+export default async function AnswerThanksPage({ params }: {
+  params: Promise<{ shortId: string }>;
+}) {
+  const { shortId } = await params;
+  
   return (
     <div className="container max-w-md px-4 py-24 flex flex-col items-center text-center">
       <Card className="w-full">

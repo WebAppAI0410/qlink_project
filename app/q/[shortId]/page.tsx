@@ -9,17 +9,23 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function AnonymousAnswerPage(props: {
-  params: { shortId: string };
-  searchParams: Promise<Message>;
+  params: Promise<{ shortId: string }>;
+  searchParams: { message?: string; success?: string };
 }) {
-  const { shortId } = props.params;
-  const searchParams = await props.searchParams;
+  const { shortId } = await props.params;
+  const searchParams = props.searchParams;
   const question = await getQuestionByShortId(shortId);
 
   if (!question || !question.is_open) {
     // 質問が存在しない、または募集が締め切られている場合は404
     notFound();
   }
+
+  // 検索パラメータからメッセージオブジェクトを構築
+  const message: Message | undefined = searchParams.message ? {
+    message: searchParams.message,
+    ...(searchParams.success ? { success: searchParams.message } : { error: searchParams.message })
+  } : undefined;
 
   return (
     <div className="container max-w-xl px-4 py-12">
@@ -43,9 +49,9 @@ export default async function AnonymousAnswerPage(props: {
         </CardContent>
       </Card>
 
-      {searchParams.message && (
+      {message && (
         <div className="mb-6">
-          <FormMessage message={searchParams} />
+          <FormMessage message={message} />
         </div>
       )}
 
