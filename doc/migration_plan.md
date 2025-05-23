@@ -21,7 +21,7 @@
    - RLSポリシーの設定
 
 3. **認証システム設計**
-   - NextAuth.js と Supabase Auth の連携
+   - Supabase Auth の連携
    - ソーシャル認証プロバイダーの設定
    - 複数アカウント管理メカニズムの設計
 

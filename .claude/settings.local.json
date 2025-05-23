@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56 npx supabase projects list)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56 npx supabase link --project-ref bescdalknyjugpdorfay)",
+      "Bash(rm:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56 npx supabase db pull)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56 npx supabase functions list)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56 npx supabase functions download env-config)",
+      "WebFetch(domain:bescdalknyjugpdorfay.supabase.co)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_9fe4226b1dd1e1294ecbadfa969963505f9efb56 npx supabase db push)",
+      "Bash(pkill:*)"
+    ],
+    "deny": []
+  }
+}
