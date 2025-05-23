@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     
     // エラーページにリダイレクト
     return NextResponse.redirect(
-      `${origin}/sign-in?authError=${encodeURIComponent(errorDescription || error)}`
+      `${origin}/login?error=${encodeURIComponent(errorDescription || error)}`
     );
   }
 
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       if (exchangeError) {
         console.error("コード交換エラー:", exchangeError);
         return NextResponse.redirect(
-          `${origin}/sign-in?authError=${encodeURIComponent(exchangeError.message)}`
+          `${origin}/login?error=${encodeURIComponent(exchangeError.message)}`
         );
       }
       
@@ -77,27 +77,24 @@ export async function GET(request: Request) {
         }
       } else {
         console.error("ユーザー情報の取得に失敗");
-        return NextResponse.redirect(`${origin}/sign-in?authError=${encodeURIComponent("認証後のユーザー情報取得に失敗しました")}`);
+        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("認証後のユーザー情報取得に失敗しました")}`);
       }
       
     } catch (err: any) {
       console.error("セッション処理エラー:", err);
       return NextResponse.redirect(
-        `${origin}/sign-in?authError=${encodeURIComponent(err?.message || '不明なエラー')}`
+        `${origin}/login?error=${encodeURIComponent(err?.message || '不明なエラー')}`
       );
     }
   } else {
     console.error("認証コードがありません");
-    return NextResponse.redirect(`${origin}/sign-in?authError=${encodeURIComponent("認証コードがありません")}`);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("認証コードがありません")}`);
   }
 
-  // 新規ユーザーの場合はプロフィール設定ページにリダイレクト
+  // 新規ユーザーの場合はオンボーディングページにリダイレクト
   if (isNewUser) {
-    console.log("新規ユーザー、プロフィール設定ページへリダイレクト");
-    return NextResponse.redirect(`${origin}/protected/profile?message=${encodeURIComponent(JSON.stringify({
-      type: 'info',
-      message: 'プロフィールを設定してください'
-    }))}`);
+    console.log("新規ユーザー、オンボーディングページへリダイレクト");
+    return NextResponse.redirect(`${origin}/onboarding`);
   }
 
   if (redirectTo) {
@@ -107,5 +104,5 @@ export async function GET(request: Request) {
 
   // ダッシュボードにリダイレクト
   console.log("認証完了、ダッシュボードへリダイレクト");
-  return NextResponse.redirect(`${origin}/protected`);
+  return NextResponse.redirect(`${origin}/dashboard`);
 }
