@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Link from 'next/link';
+import { AdBanner } from '@/components/ui/ad-banner';
+import { usePremium } from '@/lib/hooks/use-premium';
 
 interface Profile {
   username: string;
@@ -53,6 +55,9 @@ export default function Dashboard() {
   const router = useRouter();
   const maxLength = 1000;
   const remainingChars = maxLength - questionContent.length;
+  
+  // プレミアム状態を取得
+  const { isPremium } = usePremium(user);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,7 +82,7 @@ export default function Dashboard() {
       
       // 質問一覧を取得
       const { data: questionsData } = await supabase
-        .from('questions')
+    .from('questions')
         .select(`
           *,
           answers(count)
@@ -96,7 +101,7 @@ export default function Dashboard() {
           *,
           question:questions(id, content, short_id)
         `)
-        .eq('user_id', user.id)
+    .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       if (answersData) {
@@ -167,7 +172,7 @@ export default function Dashboard() {
   const openQuestions = questions.filter(q => q.is_open).length;
   const totalAnswers = questions.reduce((sum, q) => sum + (q.answers?.[0]?.count || 0), 0);
   const myAnswers = answers.length;
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-sky-50">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -253,6 +258,9 @@ export default function Dashboard() {
               </Card>
             </div>
 
+            {/* 広告バナー */}
+            <AdBanner size="medium" position="top" isPremium={isPremium} />
+
             {/* 質問作成フォーム */}
             <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
               <CardHeader>
@@ -282,7 +290,7 @@ export default function Dashboard() {
                         maxLength={maxLength}
                         required
                       />
-                      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center">
                         <p className="text-xs text-gray-500">
                           💡 具体的で分かりやすい質問ほど、良い回答が集まります
                         </p>
@@ -328,8 +336,8 @@ export default function Dashboard() {
                       ) : (
                         '🚀 質問を作成'
                       )}
-                    </Button>
-                  </div>
+        </Button>
+      </div>
                 </form>
               </CardContent>
             </Card>
@@ -343,7 +351,7 @@ export default function Dashboard() {
                 <CardContent className="space-y-3">
                   {questions.slice(0, 3).map((question) => (
                     <Link
-                      key={question.id}
+              key={question.id}
                       href={`/protected/questions/${question.id}`}
                       className="block p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-colors duration-200"
                     >
@@ -357,12 +365,12 @@ export default function Dashboard() {
                             : 'bg-gray-100 text-gray-700'
                         }`}>
                           {question.is_open ? '🔥 回答受付中' : '⏰ 締め切り済み'}
-                        </span>
+                  </span>
                         <span className="text-gray-500">
                           💬 {question.answers?.[0]?.count || 0}件の回答
-                        </span>
-                      </div>
-                    </Link>
+                  </span>
+                </div>
+              </Link>
                   ))}
                   {questions.length > 3 && (
                     <button
@@ -404,7 +412,7 @@ export default function Dashboard() {
                           <span className="text-sm text-gray-500 flex items-center gap-1">
                             💬 {question.answers?.[0]?.count || 0}件の回答
                           </span>
-                        </div>
+            </div>
                         <span className="text-sm text-gray-500">
                           {new Date(question.created_at).toLocaleDateString('ja-JP', {
                             year: 'numeric',
@@ -412,12 +420,12 @@ export default function Dashboard() {
                             day: 'numeric'
                           })}
                         </span>
-                      </div>
+        </div>
                     </Link>
                   </CardContent>
                 </Card>
               ))
-            ) : (
+      ) : (
               <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
                 <CardContent className="text-center py-12">
                   <div className="text-6xl mb-4">🤔</div>
@@ -432,7 +440,7 @@ export default function Dashboard() {
                     className="bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white rounded-xl px-6 py-3 font-medium shadow-lg transition-all duration-200 hover:scale-105"
                   >
                     🚀 質問を作成する
-                  </Button>
+          </Button>
                 </CardContent>
               </Card>
             )}
@@ -494,8 +502,8 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             )}
-          </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

@@ -8,6 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { AdBanner } from '@/components/ui/ad-banner';
+import { usePremium } from '@/lib/hooks/use-premium';
+import { QuestionAnalytics } from '@/components/analytics/question-analytics';
+import { ReferralProgram } from '@/components/referral/referral-program';
 
 interface Profile {
   username: string;
@@ -27,6 +31,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState('');
   const supabase = createClient();
   const router = useRouter();
+  const { isPremium } = usePremium(user);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -125,7 +130,7 @@ export default function ProfilePage() {
 
       setSuccess('プロフィールを更新しました！');
       setProfileImage(null);
-      
+  
       // プロフィール情報を再取得
       const { data: updatedProfile } = await supabase
         .from('profiles')
@@ -136,7 +141,7 @@ export default function ProfilePage() {
       if (updatedProfile) {
         setProfile(updatedProfile);
         setProfileImageUrl(updatedProfile.profile_pic_url || '');
-      }
+  }
     } catch (error: any) {
       console.error('プロフィール更新エラー:', error);
       setError(error.message || 'プロフィールの更新に失敗しました');
@@ -155,7 +160,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-sky-50 py-8">
       <div className="max-w-2xl mx-auto px-4 space-y-8">
@@ -219,10 +224,10 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-500 text-center">
                   📸 プロフィール画像をクリックして変更
                 </p>
-              </div>
+        </div>
 
               {/* メールアドレス */}
-              <div className="space-y-2">
+          <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700 font-medium">
                   メールアドレス
                 </Label>
@@ -235,44 +240,44 @@ export default function ProfilePage() {
                 <p className="text-xs text-gray-500">
                   メールアドレスは変更できません
                 </p>
-              </div>
-
+          </div>
+          
               {/* ユーザー名 */}
-              <div className="space-y-2">
+          <div className="space-y-2">
                 <Label htmlFor="username" className="text-gray-700 font-medium">
                   ユーザー名 <span className="text-red-400">*</span>
                 </Label>
-                <Input 
-                  id="username" 
+            <Input 
+              id="username" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="例: qlink_user"
                   className="rounded-xl border-gray-200 focus:border-blue-400 focus:ring-blue-400"
-                  required 
-                  minLength={3}
-                />
+              required 
+              minLength={3}
+            />
                 <p className="text-xs text-gray-500">
-                  ユーザー名は公開され、URLに使用されます（3文字以上）
-                </p>
-              </div>
-
+              ユーザー名は公開され、URLに使用されます（3文字以上）
+            </p>
+          </div>
+          
               {/* 表示名 */}
-              <div className="space-y-2">
+          <div className="space-y-2">
                 <Label htmlFor="display_name" className="text-gray-700 font-medium">
                   表示名（オプション）
                 </Label>
-                <Input 
-                  id="display_name" 
+            <Input 
+              id="display_name" 
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="例: 太郎"
                   className="rounded-xl border-gray-200 focus:border-blue-400 focus:ring-blue-400"
-                />
+            />
                 <p className="text-xs text-gray-500">
-                  表示名は公開プロフィールに表示されます（省略可）
-                </p>
-              </div>
-
+              表示名は公開プロフィールに表示されます（省略可）
+            </p>
+          </div>
+          
               {/* 送信ボタン */}
               <Button
                 type="submit"
@@ -288,9 +293,18 @@ export default function ProfilePage() {
                   '💾 プロフィールを更新'
                 )}
               </Button>
-            </form>
+        </form>
           </CardContent>
         </Card>
+
+        {/* アナリティクス機能 */}
+        <QuestionAnalytics userId={user.id} isPremium={isPremium} />
+
+        {/* お友達紹介プログラム */}
+        <ReferralProgram userId={user.id} isPremium={isPremium} />
+
+        {/* 広告バナー */}
+        <AdBanner size="medium" position="bottom" isPremium={isPremium} />
       </div>
     </div>
   );

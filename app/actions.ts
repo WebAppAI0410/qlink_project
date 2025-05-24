@@ -73,21 +73,66 @@ export const createQuestionAction = async (formData: FormData) => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
-    return redirect('/login?error=ログインが必要です');
+    const errorMessage = encodeURIComponent('ログインが必要です');
+    return redirect(`/login?error=${errorMessage}`);
   }
   
   const content = formData.get("content")?.toString();
   
   if (!content || content.trim().length === 0) {
-    return redirect('/protected/questions/new?error=質問内容を入力してください');
+    const errorMessage = encodeURIComponent('質問内容を入力してください');
+    return redirect(`/protected/questions/new?error=${errorMessage}`);
   }
   
   if (content.length > 1000) { // 文字数制限
-    return redirect('/protected/questions/new?error=質問内容は1000文字以下にしてください');
+    const errorMessage = encodeURIComponent('質問内容は1000文字以下にしてください');
+    return redirect(`/protected/questions/new?error=${errorMessage}`);
+  }
+
+  // AIモデレーション実行
+  let moderationResult;
+  let moderationMethod = 'keywords'; // デフォルト
+  
+  try {
+    const { moderateContent } = await import('@/utils/moderation');
+    moderationResult = await moderateContent(content);
+    
+    // 使用したモデレーション手法を判定
+    if (process.env.PERSPECTIVE_API_KEY) {
+      moderationMethod = 'perspective';
+    } else {
+      moderationMethod = 'keywords'; // フォールバック時
+    }
+  } catch (moderationError) {
+    console.error('Moderation failed:', moderationError);
+    // モデレーションが失敗した場合はフォールバック
+    moderationResult = {
+      isAppropriate: true,
+      reason: '',
+      severity: 'low' as const,
+      confidence: 0.5
+    };
+  }
+
+  // 質問は基本的に投稿を許可し、重大な場合のみブロック
+  if (!moderationResult.isAppropriate && moderationResult.severity === 'high' && moderationResult.confidence > 0.8) {
+    const errorMessage = encodeURIComponent(`投稿できませんでした: ${moderationResult.reason || '不適切な内容が含まれています'}`);
+    return redirect(`/protected/questions/new?error=${errorMessage}`);
   }
   
   // short_idをランダムに生成
   const shortId = generateShortId(7);
+  
+  // モデレーション状況を設定 - 質問は基本的に承認し、センシティブフラグのみ設定
+  let moderationStatus = 'approved';
+  let isSensitive = false;
+  
+  if (!moderationResult.isAppropriate) {
+    isSensitive = true; // OGP伏せ字用フラグ
+    if (moderationResult.severity === 'high') {
+      moderationStatus = 'flagged'; // 高リスクの場合のみフラグ
+    }
+  }
   
   // 質問を作成
   const { data: question, error } = await supabase
@@ -95,14 +140,38 @@ export const createQuestionAction = async (formData: FormData) => {
     .insert({
       content,
       user_id: user.id,
-      short_id: shortId
+      short_id: shortId,
+      moderation_status: moderationStatus,
+      moderation_reason: moderationResult.reason || null,
+      is_sensitive: isSensitive
     })
     .select()
     .single();
 
   if (error) {
     console.error(error);
-    return redirect('/protected/questions/new?error=質問の作成に失敗しました');
+    const errorMessage = encodeURIComponent('質問の作成に失敗しました');
+    return redirect(`/protected/questions/new?error=${errorMessage}`);
+  }
+
+  // モデレーションログを記録
+  try {
+    await supabase
+      .from('moderation_logs')
+      .insert({
+        content_type: 'question',
+        content_id: question.id,
+        original_content: content,
+        is_appropriate: moderationResult.isAppropriate,
+        reason: moderationResult.reason,
+        severity: moderationResult.severity,
+        confidence: moderationResult.confidence,
+        moderation_method: moderationMethod,
+        action_taken: moderationStatus === 'flagged' ? 'flagged' : 'none'
+      });
+  } catch (logError) {
+    console.error('Failed to log moderation result:', logError);
+    // ログが失敗してもユーザーの投稿は続行
   }
 
   return redirect(`/protected/questions/${question.id}`);
@@ -147,7 +216,8 @@ export const updateQuestionStatusAction = async (formData: FormData) => {
   }
   
   revalidatePath(`/protected/questions/${questionId}`);
-  return redirect(`/protected/questions/${questionId}?success=質問を${isOpen ? '募集中' : '締め切り'}に設定しました`);
+  const statusMessage = encodeURIComponent(`質問を${isOpen ? '募集中' : '締め切り'}に設定しました`);
+  return redirect(`/protected/questions/${questionId}?success=${statusMessage}`);
 };
 
 // ベストアンサー設定アクション
@@ -189,7 +259,8 @@ export const setBestAnswerAction = async (formData: FormData) => {
   }
   
   revalidatePath(`/protected/questions/${questionId}`);
-  return redirect(`/protected/questions/${questionId}?success=ベストアンサーを設定しました`);
+  const bestAnswerMessage = encodeURIComponent('ベストアンサーを設定しました');
+  return redirect(`/protected/questions/${questionId}?success=${bestAnswerMessage}`);
 };
 
 // 匿名回答作成アクション
@@ -201,15 +272,18 @@ export const createAnonymousAnswerAction = async (formData: FormData) => {
   const shortId = formData.get("short_id")?.toString();
 
   if (!content || content.trim().length === 0) {
-    return redirect(`/q/${shortId}?error=回答内容を入力してください`);
+    const errorMessage = encodeURIComponent('回答内容を入力してください');
+    return redirect(`/q/${shortId}?error=${errorMessage}`);
   }
   
   if (content.length > 1000) { // 文字数制限
-    return redirect(`/q/${shortId}?error=回答内容は1000文字以下にしてください`);
+    const errorMessage = encodeURIComponent('回答内容は1000文字以下にしてください');
+    return redirect(`/q/${shortId}?error=${errorMessage}`);
   }
   
   if (!questionId || !shortId) {
-    return redirect(`/q/${shortId}?error=質問情報が不足しています`);
+    const errorMessage = encodeURIComponent('質問情報が不足しています');
+    return redirect(`/q/${shortId}?error=${errorMessage}`);
   }
 
   // 質問が存在し、回答受付中か確認
@@ -221,25 +295,92 @@ export const createAnonymousAnswerAction = async (formData: FormData) => {
     .single();
   
   if (!question) {
-    return redirect(`/q/${shortId}?error=この質問は存在しないか、締め切られています`);
+    const errorMessage = encodeURIComponent('この質問は存在しないか、締め切られています');
+    return redirect(`/q/${shortId}?error=${errorMessage}`);
+  }
+
+  // AIモデレーション実行
+  let moderationResult;
+  let moderationMethod = 'keywords'; // デフォルト
+  
+  try {
+    const { moderateContent } = await import('@/utils/moderation');
+    moderationResult = await moderateContent(content);
+    
+    // 使用したモデレーション手法を判定
+    if (process.env.PERSPECTIVE_API_KEY) {
+      moderationMethod = 'perspective';
+    } else {
+      moderationMethod = 'keywords'; // フォールバック時
+    }
+  } catch (moderationError) {
+    console.error('Moderation failed:', moderationError);
+    // モデレーションが失敗した場合はフォールバック
+    moderationResult = {
+      isAppropriate: true,
+      reason: '',
+      severity: 'low' as const,
+      confidence: 0.5
+    };
   }
   
   // 回答用のshort_idを生成
   const answerShortId = generateShortId(7);
   
+  // 不適切な内容の場合の処理
+  let isHidden = false;
+  let moderationStatus = 'approved';
+  
+  if (!moderationResult.isAppropriate && moderationResult.severity !== 'low') {
+    isHidden = true; // 自動で非表示
+    moderationStatus = 'flagged';
+  }
+  
   // 回答を作成
-  const { error } = await supabase
+  const { data: answer, error } = await supabase
     .from("answers")
     .insert({
       content,
       question_id: questionId,
       short_id: answerShortId,
-      ip_address: '0.0.0.0' // 実際の実装ではIPアドレスを取得するロジックが必要
-  });
+      ip_address: '0.0.0.0', // 実際の実装ではIPアドレスを取得するロジックが必要
+      is_hidden: isHidden,
+      moderation_status: moderationStatus,
+      moderation_reason: moderationResult.reason || null
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error(error);
-    return redirect(`/q/${shortId}?error=回答の投稿に失敗しました`);
+    const errorMessage = encodeURIComponent('回答の投稿に失敗しました');
+    return redirect(`/q/${shortId}?error=${errorMessage}`);
+  }
+
+  // モデレーションログを記録
+  try {
+    await supabase
+      .from('moderation_logs')
+      .insert({
+        content_type: 'answer',
+        content_id: answer.id,
+        original_content: content,
+        is_appropriate: moderationResult.isAppropriate,
+        reason: moderationResult.reason,
+        severity: moderationResult.severity,
+        confidence: moderationResult.confidence,
+        moderation_method: moderationMethod,
+        action_taken: isHidden ? 'hidden' : 'none'
+      });
+  } catch (logError) {
+    console.error('Failed to log moderation result:', logError);
+    // ログが失敗してもユーザーの投稿は続行
+  }
+
+  // 不適切な内容が検出された場合の特別メッセージ
+  if (!moderationResult.isAppropriate) {
+    const warningMessage = encodeURIComponent('投稿は完了しましたが、内容が確認中のため一時的に非表示になっています。');
+    return redirect(`/q/${shortId}/thanks?warning=${warningMessage}`);
   }
 
   return redirect(`/q/${shortId}/thanks`);
@@ -286,7 +427,8 @@ export const toggleAnswerVisibilityAction = async (formData: FormData) => {
   }
   
   revalidatePath(`/protected/questions/${questionId}`);
-  return redirect(`/protected/questions/${questionId}?success=回答を${isHidden ? '非表示' : '表示'}に設定しました`);
+  const successMessage = encodeURIComponent(`回答を${isHidden ? '非表示' : '表示'}に設定しました`);
+  return redirect(`/protected/questions/${questionId}?success=${successMessage}`);
 };
 
 // ヘルパー関数: ランダムな短縮IDを生成

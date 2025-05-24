@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { AdBanner } from '@/components/ui/ad-banner'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -19,15 +20,15 @@ export default async function Home() {
         <div className="text-center space-y-6 max-w-4xl mx-auto">
           <div className="text-6xl mb-6">💬✨</div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl bg-gradient-to-r from-blue-500 to-sky-500 bg-clip-text text-transparent">
-            Qlinkへようこそ！
-          </h1>
+          Qlinkへようこそ！
+        </h1>
           <p className="max-w-2xl mx-auto text-lg text-gray-600 sm:text-xl leading-relaxed">
             匿名で気軽に質問し、みんなの意見を集めましょう。<br />
             あなたの疑問や興味を共有し、新しい発見があるかもしれません。
-          </p>
-        </div>
+        </p>
+      </div>
         
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
           <Button 
             asChild 
             size="lg" 
@@ -42,8 +43,13 @@ export default async function Home() {
             className="border-2 border-blue-200 hover:border-sky-300 hover:bg-sky-50 rounded-xl px-8 py-4 text-lg font-medium transition-all duration-200 hover:scale-105"
           >
             <Link href="/signup">✨ 新規登録</Link>
-          </Button>
+        </Button>
         </div>
+      </div>
+
+      {/* 広告バナー */}
+      <div className="max-w-4xl mx-auto px-4">
+        <AdBanner size="medium" position="top" />
       </div>
 
       {/* 特徴セクション */}
@@ -93,7 +99,7 @@ export default async function Home() {
             className="bg-white text-blue-600 hover:bg-blue-50 rounded-xl px-8 py-4 text-lg font-medium shadow-lg transition-all duration-200 hover:scale-105"
           >
             <Link href="/signup">🎉 無料で始める</Link>
-          </Button>
+        </Button>
         </div>
       </div>
     </div>

@@ -8,17 +8,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { createClient } from '@/utils/supabase/client';
+import { AdBanner } from '@/components/ui/ad-banner';
+import { usePremium, getCharacterLimit } from '@/lib/hooks/use-premium';
+import { useEffect } from 'react';
 
 export default function NewQuestionPage() {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const supabase = createClient();
   
-  const maxLength = 1000;
+  // プレミアム状態を取得
+  const { isPremium } = usePremium(user);
+  const maxLength = getCharacterLimit(isPremium, 'question');
   const remainingChars = maxLength - content.length;
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, [supabase]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +70,7 @@ export default function NewQuestionPage() {
       setError(error.message || '質問の作成に失敗しました');
     } finally {
       setIsLoading(false);
-    }
+  }
   };
   
   return (
@@ -71,17 +85,17 @@ export default function NewQuestionPage() {
           <p className="text-gray-600 max-w-2xl mx-auto">
             あなたの疑問や興味を質問にして、みんなの意見を聞いてみましょう！<br />
             匿名で回答してもらえるので、本音の意見が集まります。
-          </p>
-        </div>
-        
+        </p>
+      </div>
+      
         {error && (
           <Card className="bg-red-50 border-red-200 rounded-2xl">
             <CardContent className="p-4">
               <p className="text-red-600 text-center">❌ {error}</p>
             </CardContent>
           </Card>
-        )}
-        
+      )}
+      
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-3xl border border-blue-100">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl text-gray-800">
@@ -95,23 +109,30 @@ export default function NewQuestionPage() {
                   <Label htmlFor="content" className="text-gray-700 font-medium text-lg">
                     質問内容
                   </Label>
-                  <Textarea
-                    id="content"
+            <Textarea
+              id="content"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="例: 私の考えたアプリのアイデアはどう思いますか？詳しく教えてください！"
                     className="min-h-[200px] rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-400 text-lg leading-relaxed"
                     maxLength={maxLength}
-                    required
-                  />
+              required
+            />
                   <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-500">
-                      💡 具体的で分かりやすい質問ほど、良い回答が集まります
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-500">
+                        💡 具体的で分かりやすい質問ほど、良い回答が集まります
+                      </p>
+                      {isPremium && (
+                        <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                          👑 プレミアム
+                        </span>
+                      )}
+                    </div>
                     <p className={`text-sm font-medium ${
                       remainingChars < 50 ? 'text-red-500' : 'text-gray-500'
                     }`}>
-                      残り {remainingChars} 文字
+                      残り {remainingChars} 文字 {!isPremium && '(プレミアムで10,000文字まで)'}
                     </p>
                   </div>
                 </div>
@@ -127,10 +148,10 @@ export default function NewQuestionPage() {
                   </div>
                   <p className="text-sm text-gray-500 text-center">
                     この内容で質問を作成します
-                  </p>
-                </div>
+            </p>
+          </div>
               )}
-              
+          
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button
                   type="button"
@@ -163,11 +184,14 @@ export default function NewQuestionPage() {
                   ) : (
                     '🚀 質問を作成'
                   )}
-                </Button>
-              </div>
-            </form>
+            </Button>
+          </div>
+        </form>
           </CardContent>
         </Card>
+
+        {/* 広告バナー */}
+        <AdBanner size="medium" position="bottom" isPremium={isPremium} />
         
         {/* ヒント */}
         <Card className="bg-blue-50/80 border-blue-200 rounded-2xl">

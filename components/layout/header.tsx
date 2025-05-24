@@ -13,6 +13,8 @@ import {
 import { User } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { usePremium } from '@/lib/hooks/use-premium'
+import { Crown } from 'lucide-react'
 
 interface Profile {
   username: string;
@@ -23,6 +25,7 @@ interface Profile {
 export default function Header({ user }: { user: User | null }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const supabase = createClient();
+  const { isPremium } = usePremium(user);
 
   useEffect(() => {
     if (user) {
@@ -49,7 +52,7 @@ export default function Header({ user }: { user: User | null }) {
           <Link href="/" className="flex items-center gap-2 group">
             <div className="text-2xl">💬</div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-sky-500 bg-clip-text text-transparent group-hover:from-sky-500 group-hover:to-blue-500 transition-all duration-300">
-              Qlink
+            Qlink
             </span>
           </Link>
           {user && (
@@ -103,6 +106,19 @@ export default function Header({ user }: { user: User | null }) {
                     <span>🏠</span> ホーム
                   </Link>
                 </DropdownMenuItem>
+                {isPremium ? (
+                  <DropdownMenuItem asChild className="rounded-xl hover:bg-yellow-50 cursor-pointer">
+                    <Link href="/premium" className="flex items-center gap-2 text-yellow-600">
+                      <Crown className="w-4 h-4" /> プレミアム管理
+                    </Link>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem asChild className="rounded-xl hover:bg-yellow-50 cursor-pointer">
+                    <Link href="/premium" className="flex items-center gap-2 text-yellow-600 font-medium">
+                      <Crown className="w-4 h-4" /> プレミアムにアップグレード
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild className="rounded-xl hover:bg-gray-50 cursor-pointer">
                   <Link href="/settings" className="flex items-center gap-2">
                     <span>⚙️</span> 設定

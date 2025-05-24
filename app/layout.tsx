@@ -13,11 +13,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Qlink - 匿名Q&Aプラットフォーム",
-  description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
+  title: "Qlink - 匿名回答募集プラットフォーム",
+  description: "匿名で質問を投稿し、回答を集めることができる回答募集プラットフォーム",
   openGraph: {
-    title: "Qlink - 匿名Q&Aプラットフォーム",
-    description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
+    title: "Qlink - 匿名回答募集プラットフォーム",
+    description: "匿名で質問を投稿し、回答を集めることができる回答募集プラットフォーム",
     url: defaultUrl,
     siteName: "Qlink",
     locale: "ja_JP",
@@ -25,8 +25,8 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Qlink - 匿名Q&Aプラットフォーム",
-    description: "匿名で質問を投稿し、回答を集めることができるQ&Aプラットフォーム",
+    title: "Qlink - 匿名回答募集プラットフォーム",
+    description: "匿名で質問を投稿し、回答を集めることができる回答募集プラットフォーム",
   },
 };
 

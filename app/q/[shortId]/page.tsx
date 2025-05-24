@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdBanner } from "@/components/ui/ad-banner";
+import { Metadata } from "next";// 動的OG画像を使用するメタデータ生成export async function generateMetadata({ params }: {  params: Promise<{ shortId: string }>;}): Promise<Metadata> {  const { shortId } = await params;    // Edge Function生成の画像URLを設定  const ogImageUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og/${shortId}`;  return {    title: `質問 - Qlink`,    description: "匿名回答募集プラットフォーム",    openGraph: {      title: `質問 - Qlink`,      description: "匿名回答募集プラットフォーム",      type: 'article',      images: [ogImageUrl],    },    twitter: {      card: 'summary_large_image',      title: `質問 - Qlink`,      description: "匿名回答募集プラットフォーム",      images: [ogImageUrl],    },  };}
 
 export default async function AnonymousAnswerPage(props: {
   params: Promise<{ shortId: string }>;
@@ -17,7 +19,6 @@ export default async function AnonymousAnswerPage(props: {
   const question = await getQuestionByShortId(shortId);
 
   if (!question || !question.is_open) {
-    // 質問が存在しない、または募集が締め切られている場合は404
     notFound();
   }
 
@@ -31,7 +32,6 @@ export default async function AnonymousAnswerPage(props: {
     <div className="container max-w-xl px-4 py-12">
       <div className="text-center mb-8">
         <Link href="/" className="inline-block mb-4">
-          {/* Qlinkのロゴなどをここに表示 */}
           <span className="text-2xl font-bold">Qlink</span> 
         </Link>
         <h1 className="text-xl font-semibold">匿名で回答する</h1>
@@ -48,6 +48,11 @@ export default async function AnonymousAnswerPage(props: {
           <p className="whitespace-pre-wrap">{question.content}</p>
         </CardContent>
       </Card>
+
+      {/* 広告バナー */}
+      <div className="mb-6">
+        <AdBanner size="medium" position="top" />
+      </div>
 
       {message && (
         <div className="mb-6">

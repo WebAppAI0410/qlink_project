@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FormMessage, Message } from "@/components/form-message";
 import { Share2Icon, CheckCircleIcon, EyeIcon, EyeOffIcon, Edit3Icon } from "lucide-react";
 import Link from "next/link";
+import { ShareButtons } from "./share-buttons";
+import { AdBanner } from "@/components/ui/ad-banner";
+import { ViewTracker } from "@/components/analytics/view-tracker";
 
 export default async function QuestionDetailPage(props: {
   params: Promise<{ id: string }>;
@@ -31,14 +34,26 @@ export default async function QuestionDetailPage(props: {
   const isOwner = userData.user.id === question.user_id;
   const answers = await getQuestionAnswers(id);
 
+  // 質問の閲覧数を記録（所有者以外の場合のみ）
+  if (!isOwner) {
+    // クライアントサイドで呼び出す必要があるため、コンポーネントで実装
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-sky-50 py-8">
-      <div className="container max-w-3xl px-4 space-y-8">
-        {searchParams.message && (
-          <div className="mb-6">
-            <FormMessage message={searchParams} />
-          </div>
-        )}
+      {/* 質問閲覧数の記録 */}
+      <ViewTracker 
+        questionId={question.id} 
+        userId={userData.user.id} 
+        isOwner={isOwner} 
+      />
+      
+      <div className="container max-w-4xl px-4 space-y-8">
+      {searchParams.message && (
+        <div className="mb-6">
+          <FormMessage message={searchParams} />
+        </div>
+      )}
 
         {/* 質問カード */}
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-3xl border border-blue-100">
@@ -63,15 +78,26 @@ export default async function QuestionDetailPage(props: {
                 }`}
               >
                 {question.is_open ? "🔥 回答募集中" : "⏰ 締め切り"}
-              </Badge>
+            </Badge>
             </div>
           </CardHeader>
-          {isOwner && (
+          
+          {/* 共有セクション */}
+          <div className="px-8 pb-4">
+            <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                🔗 質問を共有して回答を集めよう！
+              </h3>
+              <ShareButtons questionShortId={question.short_id} questionContent={question.content} />
+            </div>
+          </div>
+
+        {isOwner && (
             <CardFooter className="flex justify-between items-center border-t border-blue-100 p-6 bg-blue-50/50 rounded-b-3xl">
               <div className="flex gap-3">
-                <form action={updateQuestionStatusAction}>
-                  <input type="hidden" name="question_id" value={question.id} />
-                  <input type="hidden" name="is_open" value={(!question.is_open).toString()} />
+              <form action={updateQuestionStatusAction}>
+                <input type="hidden" name="question_id" value={question.id} />
+                <input type="hidden" name="is_open" value={(!question.is_open).toString()} />
                   <Button 
                     type="submit" 
                     variant="outline" 
@@ -79,9 +105,9 @@ export default async function QuestionDetailPage(props: {
                     className="rounded-xl border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                   >
                     {question.is_open ? "⏰ 締め切る" : "🔥 募集を再開"}
-                  </Button>
-                </form>
-              </div>
+                </Button>
+              </form>
+            </div>
               <div className="flex items-center gap-3">
                 <Button 
                   variant="outline" 
@@ -89,14 +115,17 @@ export default async function QuestionDetailPage(props: {
                   asChild
                   className="rounded-xl border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                 >
-                  <Link href={`/q/${question.short_id}`} target="_blank">
-                    <Share2Icon size={14} className="mr-2" /> 🔗 回答用リンク
-                  </Link>
-                </Button>
-              </div>
-            </CardFooter>
-          )}
-        </Card>
+                <Link href={`/q/${question.short_id}`} target="_blank">
+                    <Share2Icon size={14} className="mr-2" /> 👁️ 回答画面を確認
+                </Link>
+              </Button>
+            </div>
+          </CardFooter>
+        )}
+      </Card>
+
+        {/* 広告バナー */}
+        <AdBanner size="medium" position="top" />
 
         {/* 回答一覧ヘッダー */}
         <div className="text-center space-y-2">
@@ -109,7 +138,7 @@ export default async function QuestionDetailPage(props: {
         </div>
 
         {/* 回答一覧 */}
-        {answers.length === 0 ? (
+      {answers.length === 0 ? (
           <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg rounded-2xl border border-blue-100">
             <CardContent className="text-center py-12">
               <div className="text-6xl mb-4">💭</div>
@@ -117,21 +146,11 @@ export default async function QuestionDetailPage(props: {
                 まだ回答がありません
               </h3>
               <p className="text-gray-600 mb-6">
-                質問リンクを共有して、回答を集めてみましょう！
+                上記の共有機能を使って、質問を拡散してみましょう！
               </p>
-              {isOwner && (
-                <Button 
-                  asChild
-                  className="bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white rounded-xl px-6 py-3 font-medium shadow-lg transition-all duration-200 hover:scale-105"
-                >
-                  <Link href={`/q/${question.short_id}`} target="_blank">
-                    🔗 回答用リンクを開く
-                  </Link>
-                </Button>
-              )}
             </CardContent>
           </Card>
-        ) : (
+      ) : (
           <div className="space-y-6">
             {answers.map((answer, index) => (
               <Card 
@@ -153,32 +172,32 @@ export default async function QuestionDetailPage(props: {
                       <p className={`text-gray-800 leading-relaxed whitespace-pre-wrap ${
                         answer.is_hidden ? 'italic text-gray-500' : ''
                       }`}>
-                        {answer.is_hidden ? (isOwner ? "この回答は非表示に設定されています。" : "") : answer.content}
-                      </p>
+                  {answer.is_hidden ? (isOwner ? "この回答は非表示に設定されています。" : "") : answer.content}
+                </p>
                     </div>
                   </div>
-                </CardContent>
-                {(isOwner || answer.id === question.best_answer_id) && (
+              </CardContent>
+              {(isOwner || answer.id === question.best_answer_id) && (
                   <CardFooter className="text-sm text-gray-500 justify-between border-t border-blue-100 p-4 bg-blue-50/30 rounded-b-2xl">
                     <div className="flex items-center gap-3">
-                      {answer.id === question.best_answer_id && (
+                    {answer.id === question.best_answer_id && (
                         <Badge 
                           variant="secondary" 
                           className="bg-yellow-100 text-yellow-700 border-yellow-200 rounded-full px-3 py-1"
                         >
                           <CheckCircleIcon size={12} className="mr-1" /> ⭐ ベストアンサー
-                        </Badge>
-                      )}
+                      </Badge>
+                    )}
                       <span className="text-xs">
                         📅 {new Date(answer.created_at).toLocaleString('ja-JP')}
                       </span>
-                    </div>
-                    {isOwner && (
-                      <div className="flex gap-2">
-                        <form action={toggleAnswerVisibilityAction}>
-                          <input type="hidden" name="answer_id" value={answer.id} />
-                          <input type="hidden" name="question_id" value={question.id} />
-                          <input type="hidden" name="is_hidden" value={(!answer.is_hidden).toString()} />
+                  </div>
+                  {isOwner && (
+                    <div className="flex gap-2">
+                      <form action={toggleAnswerVisibilityAction}>
+                        <input type="hidden" name="answer_id" value={answer.id} />
+                        <input type="hidden" name="question_id" value={question.id} />
+                        <input type="hidden" name="is_hidden" value={(!answer.is_hidden).toString()} />
                           <Button 
                             type="submit" 
                             variant="ghost" 
@@ -186,13 +205,13 @@ export default async function QuestionDetailPage(props: {
                             className="h-8 w-8 p-0 rounded-lg hover:bg-blue-100"
                             title={answer.is_hidden ? "表示する" : "非表示にする"}
                           >
-                            {answer.is_hidden ? <EyeIcon size={14}/> : <EyeOffIcon size={14} />}
-                          </Button>
-                        </form>
-                        {!answer.is_hidden && answer.id !== question.best_answer_id && (
-                          <form action={setBestAnswerAction}>
-                            <input type="hidden" name="question_id" value={question.id} />
-                            <input type="hidden" name="answer_id" value={answer.id} />
+                          {answer.is_hidden ? <EyeIcon size={14}/> : <EyeOffIcon size={14} />}
+                        </Button>
+                      </form>
+                      {!answer.is_hidden && answer.id !== question.best_answer_id && (
+                        <form action={setBestAnswerAction}>
+                          <input type="hidden" name="question_id" value={question.id} />
+                          <input type="hidden" name="answer_id" value={answer.id} />
                             <Button 
                               type="submit" 
                               variant="ghost" 
@@ -200,18 +219,18 @@ export default async function QuestionDetailPage(props: {
                               className="h-8 w-8 p-0 rounded-lg hover:bg-yellow-100"
                               title="ベストアンサーに設定"
                             >
-                              <CheckCircleIcon size={14} />
-                            </Button>
-                          </form>
-                        )}
-                      </div>
-                    )}
-                  </CardFooter>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
+                            <CheckCircleIcon size={14} />
+                          </Button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+                </CardFooter>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
       </div>
     </div>
   );

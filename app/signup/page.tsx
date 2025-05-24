@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SocialLoginForm } from '@/components/social-login-form'
+import { AdBanner } from '@/components/ui/ad-banner'
 
 interface SignUpPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -25,19 +26,19 @@ export default async function SignUpPage({ searchParams: searchParamsPromise }: 
               Qlinkへようこそ！
             </h1>
             <p className="text-gray-600 text-sm">
-              すでにアカウントをお持ちの場合は{' '}
+            すでにアカウントをお持ちの場合は{' '}
               <Link href="/login" className="text-blue-500 hover:text-blue-600 font-medium hover:underline">
-                ログイン
-              </Link>
-            </p>
-          </div>
-          
-          {error && (
+              ログイン
+            </Link>
+          </p>
+        </div>
+        
+        {error && (
             <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100">
               ❌ {error}
-            </div>
-          )}
-
+          </div>
+        )}
+        
           {/* ソーシャル登録 */}
           <div className="space-y-3">
             <SocialLoginForm provider="google" />
@@ -57,7 +58,7 @@ export default async function SignUpPage({ searchParams: searchParamsPromise }: 
           </div>
           
           <form className="space-y-6">
-            <div className="space-y-2">
+          <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700 font-medium">
                 メールアドレス
               </Label>
@@ -69,9 +70,9 @@ export default async function SignUpPage({ searchParams: searchParamsPromise }: 
                 className="rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                 required 
               />
-            </div>
-            
-            <div className="space-y-2">
+          </div>
+          
+          <div className="space-y-2">
               <Label htmlFor="password" className="text-gray-700 font-medium">
                 パスワード
               </Label>
@@ -84,10 +85,10 @@ export default async function SignUpPage({ searchParams: searchParamsPromise }: 
                 required 
               />
               <p className="text-xs text-gray-500">
-                パスワードは8文字以上で、英数字と記号を含める必要があります。
-              </p>
-            </div>
-            
+              パスワードは8文字以上で、英数字と記号を含める必要があります。
+            </p>
+          </div>
+          
             <div className="flex items-start space-x-3">
               <Checkbox id="terms" required className="mt-1" />
               <Label htmlFor="terms" className="text-sm leading-relaxed text-gray-600">
@@ -99,16 +100,21 @@ export default async function SignUpPage({ searchParams: searchParamsPromise }: 
                   プライバシーポリシー
                 </Link>
                 に同意します
-              </Label>
-            </div>
-            
+            </Label>
+          </div>
+          
             <Button 
               formAction={signup} 
               className="w-full bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white rounded-xl py-3 font-medium shadow-lg transition-all duration-200 transform hover:scale-105"
             >
               🎉 アカウントを作成
-            </Button>
-          </form>
+          </Button>
+        </form>
+        </div>
+
+        {/* 広告バナー */}
+        <div className="mt-6">
+          <AdBanner size="small" position="bottom" />
         </div>
       </div>
     </div>

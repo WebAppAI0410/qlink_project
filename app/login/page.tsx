@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SocialLoginForm } from '@/components/social-login-form'
+import { AdBanner } from '@/components/ui/ad-banner'
 
 interface LoginPageProps {
   searchParams: Promise<{ error?: string; message?: string }>;
@@ -25,25 +26,25 @@ export default async function LoginPage({ searchParams: searchParamsPromise }: L
               おかえりなさい！
             </h1>
             <p className="text-gray-600 text-sm">
-              アカウントをお持ちでない場合は{' '}
+            アカウントをお持ちでない場合は{' '}
               <Link href="/signup" className="text-blue-500 hover:text-blue-600 font-medium hover:underline">
-                新規登録
-              </Link>
-            </p>
-          </div>
-          
-          {error && (
+              新規登録
+            </Link>
+          </p>
+        </div>
+        
+        {error && (
             <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100">
               ❌ {error}
-            </div>
-          )}
-          
-          {message && (
+          </div>
+        )}
+        
+        {message && (
             <div className="p-4 bg-green-50 text-green-600 rounded-2xl text-sm border border-green-100">
               ✅ {message}
-            </div>
-          )}
-
+          </div>
+        )}
+        
           {/* ソーシャルログイン */}
           <div className="space-y-3">
             <SocialLoginForm provider="google" />
@@ -63,7 +64,7 @@ export default async function LoginPage({ searchParams: searchParamsPromise }: L
           </div>
           
           <form className="space-y-6">
-            <div className="space-y-2">
+          <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700 font-medium">
                 メールアドレス
               </Label>
@@ -75,17 +76,17 @@ export default async function LoginPage({ searchParams: searchParamsPromise }: L
                 className="rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                 required 
               />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-gray-700 font-medium">
                   パスワード
                 </Label>
                 <Link href="/forgot-password" className="text-xs text-blue-500 hover:text-blue-600 hover:underline">
-                  パスワードをお忘れですか？
-                </Link>
-              </div>
+                パスワードをお忘れですか？
+              </Link>
+            </div>
               <Input 
                 id="password" 
                 name="password" 
@@ -94,29 +95,34 @@ export default async function LoginPage({ searchParams: searchParamsPromise }: L
                 className="rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                 required 
               />
-            </div>
-            
+          </div>
+          
             <Button 
               formAction={login} 
               className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white rounded-xl py-3 font-medium shadow-lg transition-all duration-200 transform hover:scale-105"
             >
               🚀 ログイン
-            </Button>
-          </form>
-          
+          </Button>
+        </form>
+        
           <div className="text-center">
             <p className="text-xs text-gray-400">
-              ログインすることで、
+            ログインすることで、
               <Link href="/terms" className="text-blue-500 hover:underline">
-                利用規約
-              </Link>
-              と
+              利用規約
+            </Link>
+            と
               <Link href="/privacy" className="text-blue-500 hover:underline">
-                プライバシーポリシー
-              </Link>
-              に同意したことになります。
-            </p>
+              プライバシーポリシー
+            </Link>
+            に同意したことになります。
+          </p>
           </div>
+        </div>
+
+        {/* 広告バナー */}
+        <div className="mt-6">
+          <AdBanner size="small" position="bottom" />
         </div>
       </div>
     </div>

@@ -27,7 +27,7 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
         options: {
           redirectTo: redirectUrl,
           skipBrowserRedirect: false,
-          scopes: provider === 'google' ? 'profile email' : undefined
+          scopes: provider === 'google' ? 'profile email' : 'users.read tweet.read offline.access'
         },
       });
       
@@ -40,7 +40,7 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
         
         let errorMessage = `認証エラー: ${signInError.message}`;
         if (signInError.message.includes('provider')) {
-          errorMessage = 'このプロバイダーは現在使用できません。管理者にGoogle認証の設定を確認してもらってください。';
+          errorMessage = 'このプロバイダーは現在使用できません。管理者にTwitter認証の設定を確認してもらってください。';
         }
         
         setError(errorMessage);
@@ -50,7 +50,7 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
       console.log('サインインデータ (signInWithOAuth):', data);
       
       if (data?.url) {
-        console.log('Google認証ページへのリダイレクト先URL:', data.url);
+        console.log('認証ページへのリダイレクト先URL:', data.url);
         window.location.href = data.url;
       } else {
         console.error('リダイレクトURLが取得できませんでした', data);

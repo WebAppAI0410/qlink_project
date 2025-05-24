@@ -15,7 +15,11 @@
             "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "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", 
             "GITHUB_REPOSITORY": "qlink_project", 
             "GITHUB_USERNAME": "WebAppAI0410" 
-            } 
-        } 
+          } 
+      },
+      "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
     }
   }
