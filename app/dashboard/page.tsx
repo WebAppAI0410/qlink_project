@@ -10,11 +10,14 @@ import { Label } from "@/components/ui/label";
 import Link from 'next/link';
 import { AdBanner } from '@/components/ui/ad-banner';
 import { usePremium } from '@/lib/hooks/use-premium';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { PremiumBadge } from '@/components/ui/premium-badge';
 
 interface Profile {
   username: string;
   display_name: string | null;
   profile_pic_url: string | null;
+  avatar_url?: string;
 }
 
 interface Question {
@@ -183,6 +186,65 @@ export default function Dashboard() {
             おかえりなさい、{profile?.display_name || profile?.username || 'ユーザー'}さん！
           </h1>
         </div>
+
+        {/* ユーザー情報カード */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <Avatar className="w-20 h-20 border-4 border-blue-200 shadow-lg">
+                  <AvatarImage 
+                    src={profile?.avatar_url || undefined} 
+                    alt={profile?.display_name || profile?.username || 'ユーザー'} 
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-sky-400 text-white text-2xl font-bold">
+                    {(profile?.display_name || profile?.username || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {isPremium && (
+                  <div className="absolute -bottom-1 -right-1">
+                    <PremiumBadge size="sm" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {profile?.display_name || profile?.username || 'ユーザー'}
+                  </h2>
+                  {isPremium && <PremiumBadge size="md" />}
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Qlinkで質問と回答を通じて、新しい発見をしよう！
+                </p>
+                <div className="flex gap-3">
+                  <Button 
+                    asChild 
+                    className="bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+                  >
+                    <Link href="/protected/questions/new">✍️ 質問を作成</Link>
+                  </Button>
+                  <Button 
+                    asChild 
+                    variant="outline"
+                    className="rounded-xl border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <Link href="/protected/profile">👤 プロフィール</Link>
+                  </Button>
+                  {!isPremium && (
+                    <Button 
+                      asChild 
+                      variant="outline"
+                      className="rounded-xl border-2 border-yellow-300 hover:border-yellow-400 hover:bg-yellow-50 text-yellow-600 transition-all duration-200"
+                    >
+                      <Link href="/premium">👑 プレミアム</Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* タブナビゲーション */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-2">
