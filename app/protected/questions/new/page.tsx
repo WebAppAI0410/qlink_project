@@ -11,6 +11,8 @@ import { createClient } from '@/utils/supabase/client';
 import { AdBanner } from '@/components/ui/ad-banner';
 import { usePremium, getCharacterLimit } from '@/lib/hooks/use-premium';
 import { useEffect } from 'react';
+import { X, ImageIcon, Crown } from 'lucide-react';
+import { PremiumBadge } from '@/components/ui/premium-badge';
 
 export default function NewQuestionPage() {
   const [content, setContent] = useState('');
@@ -18,6 +20,8 @@ export default function NewQuestionPage() {
   const [error, setError] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const router = useRouter();
   const supabase = createClient();
   
@@ -73,8 +77,43 @@ export default function NewQuestionPage() {
   }
   };
   
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const maxImages = isPremium ? 4 : 0;
+    
+    if (!isPremium) {
+      setError('画像添付はプレミアム会員限定の機能です');
+      return;
+    }
+    
+    if (images.length + files.length > maxImages) {
+      setError(`画像は最大${maxImages}枚まで添付できます`);
+      return;
+    }
+    
+    const newImages = [...images, ...files];
+    const newUrls = [...imageUrls, ...files.map(file => URL.createObjectURL(file))];
+    
+    setImages(newImages);
+    setImageUrls(newUrls);
+    setError('');
+  };
+  
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newUrls = imageUrls.filter((_, i) => i !== index);
+    
+    // Clean up URL
+    if (imageUrls[index]) {
+      URL.revokeObjectURL(imageUrls[index]);
+    }
+    
+    setImages(newImages);
+    setImageUrls(newUrls);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-sky-50 py-8">
       <div className="max-w-4xl mx-auto px-4 space-y-8">
         {/* ヘッダー */}
         <div className="text-center space-y-4">
@@ -82,11 +121,10 @@ export default function NewQuestionPage() {
           <h1 className="text-3xl font-bold text-gray-800">
             新しい質問を作成
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            あなたの疑問や興味を質問にして、みんなの意見を聞いてみましょう！<br />
-            匿名で回答してもらえるので、本音の意見が集まります。
-        </p>
-      </div>
+          <p className="text-gray-600">
+            質問を投稿して、みんなの意見を聞いてみましょう
+          </p>
+        </div>
       
         {error && (
           <Card className="bg-red-50 border-red-200 rounded-2xl">
@@ -96,43 +134,93 @@ export default function NewQuestionPage() {
           </Card>
       )}
       
-        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-3xl border border-blue-100">
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl text-gray-800">
-              {showPreview ? '📖 プレビュー' : '✍️ 質問を入力'}
+            <CardTitle className="text-xl text-gray-800 flex items-center justify-center gap-2">
+              {showPreview ? (
+                <><span>📖</span> プレビュー</>
+              ) : (
+                <><span>✍️</span> 質問を入力</>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {!showPreview ? (
                 <div className="space-y-4">
-                  <Label htmlFor="content" className="text-gray-700 font-medium text-lg">
+                  <Label htmlFor="content" className="text-gray-700 font-medium">
                     質問内容
                   </Label>
-            <Textarea
-              id="content"
+                  <Textarea
+                    id="content"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="例: 私の考えたアプリのアイデアはどう思いますか？詳しく教えてください！"
-                    className="min-h-[200px] rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-400 text-lg leading-relaxed"
+                    className="min-h-[200px] rounded-xl border-gray-200 focus:border-blue-400 focus:ring-blue-400"
                     maxLength={maxLength}
-              required
-            />
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500">
-                        💡 具体的で分かりやすい質問ほど、良い回答が集まります
+                    required
+                  />
+                  
+                  {/* 画像添付セクション（プレミアム限定） */}
+                  {isPremium && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-gray-700 font-medium flex items-center gap-2">
+                          <ImageIcon size={18} />
+                          画像を添付
+                        </Label>
+                        <PremiumBadge size="sm" />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {imageUrls.map((url, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={url}
+                              alt={`添付画像 ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-xl border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        
+                        {images.length < 4 && (
+                          <label className="w-full h-24 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                            <div className="text-center">
+                              <ImageIcon size={20} className="mx-auto text-gray-400 mb-1" />
+                              <span className="text-xs text-gray-500">画像を追加</span>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
+                      </div>
+                      
+                      <p className="text-xs text-gray-500">
+                        📸 最大4枚まで画像を添付できます（プレミアム限定機能）
                       </p>
-                      {isPremium && (
-                        <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                          👑 プレミアム
-                        </span>
-                      )}
                     </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-500">
+                      💡 具体的で分かりやすい質問ほど、良い回答が集まります
+                    </p>
                     <p className={`text-sm font-medium ${
                       remainingChars < 50 ? 'text-red-500' : 'text-gray-500'
                     }`}>
-                      残り {remainingChars} 文字 {!isPremium && '(プレミアムで10,000文字まで)'}
+                      残り {remainingChars} 文字
                     </p>
                   </div>
                 </div>
@@ -142,9 +230,23 @@ export default function NewQuestionPage() {
                     プレビュー
                   </Label>
                   <div className="bg-blue-50 rounded-xl p-6 min-h-[200px] border border-blue-100">
-                    <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">
+                    <p className="leading-relaxed text-gray-800 whitespace-pre-wrap">
                       {content || 'ここに質問内容が表示されます...'}
                     </p>
+                    
+                    {/* プレビューの画像表示 */}
+                    {imageUrls.length > 0 && (
+                      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {imageUrls.map((url, index) => (
+                          <img
+                            key={index}
+                            src={url}
+                            alt={`添付画像 ${index + 1}`}
+                            className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500 text-center">
                     この内容で質問を作成します
@@ -190,21 +292,61 @@ export default function NewQuestionPage() {
           </CardContent>
         </Card>
 
-        {/* 広告バナー */}
-        <AdBanner size="medium" position="bottom" isPremium={isPremium} />
+        {/* 広告バナー - 一時的に無効化 */}
+        {/* <AdBanner size="medium" position="bottom" isPremium={isPremium} /> */}
         
         {/* ヒント */}
-        <Card className="bg-blue-50/80 border-blue-200 rounded-2xl">
-          <CardContent className="p-6">
-            <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+          <CardHeader>
+            <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
               <span>💡</span> 良い質問のコツ
-            </h3>
-            <ul className="space-y-2 text-blue-700">
-              <li>• 具体的で分かりやすい内容にする</li>
-              <li>• 背景や状況を簡潔に説明する</li>
-              <li>• 回答者が答えやすい形で質問する</li>
-              <li>• 複数の観点からの意見を求める</li>
-            </ul>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl border-2 border-blue-200 bg-blue-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">📝</span>
+                  <span className="font-medium">具体的な内容</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  背景や状況を簡潔に説明しましょう
+                </p>
+              </div>
+              
+              <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🎯</span>
+                  <span className="font-medium">答えやすい形式</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  回答者が答えやすい質問にしましょう
+                </p>
+              </div>
+              
+              <div className="p-4 rounded-xl border-2 border-purple-200 bg-purple-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">👥</span>
+                  <span className="font-medium">多角的な視点</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  複数の観点からの意見を求めましょう
+                </p>
+              </div>
+              
+              {isPremium && (
+                <div className="p-4 rounded-xl border-2 border-yellow-200 bg-yellow-50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">📸</span>
+                    <span className="font-medium">画像で補足</span>
+                    <PremiumBadge size="sm" />
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    画像を使って内容をより伝わりやすく
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -5,6 +5,8 @@ import { createClient } from '@/utils/supabase/client';
 import { usePremium } from '@/lib/hooks/use-premium';
 import { useRouter } from 'next/navigation';
 import { Check, Crown, Zap, Shield, BarChart3, Star } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { getStripe } from '@/lib/stripe';
 
 interface PremiumPlan {
   id: string;
@@ -21,6 +23,8 @@ interface PremiumPlan {
 export default function PremiumPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<PremiumPlan | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'konbini' | 'both'>('card');
   const router = useRouter();
   const supabase = createClient();
   
@@ -77,15 +81,50 @@ export default function PremiumPage() {
     setUser(user);
   };
 
-  const handleSubscribe = async (planId: string) => {
+  const handleSubscribe = async (plan: PremiumPlan) => {
     if (!user) {
       router.push('/login');
       return;
     }
 
-    // TODO: Stripe Checkout Session作成
-    console.log('サブスクリプション開始:', { planId });
-    alert('決済機能は実装中です。しばらくお待ちください。');
+    setLoading(true);
+    setSelectedPlan(plan);
+
+    try {
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId: plan.id,
+          billingCycle: plan.period,
+          paymentMethod: paymentMethod,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'エラーが発生しました');
+      }
+
+      // Stripe Checkoutにリダイレクト
+      const stripe = await getStripe();
+      const { error } = await stripe!.redirectToCheckout({
+        sessionId: data.sessionId,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('決済エラー:', error);
+      alert(`決済の開始に失敗しました: ${error.message}`);
+    } finally {
+      setLoading(false);
+      setSelectedPlan(null);
+    }
   };
 
   const featureIcons = {
@@ -192,7 +231,7 @@ export default function PremiumPage() {
               </ul>
 
               <button
-                onClick={() => handleSubscribe(plan.id)}
+                onClick={() => handleSubscribe(plan)}
                 disabled={isPremium}
                 className={`
                   w-full py-4 rounded-xl font-bold text-lg transition-all duration-200
@@ -283,6 +322,100 @@ export default function PremiumPage() {
             </div>
           </div>
         </div>
+
+        {/* 決済方法選択 */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl mb-8">
+          <CardHeader>
+            <CardTitle className="text-xl text-gray-800 text-center flex items-center justify-center gap-2">
+              💳 決済方法を選択
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-3 gap-4">
+              <button
+                onClick={() => setPaymentMethod('card')}
+                className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                  paymentMethod === 'card'
+                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                }`}
+              >
+                <div className="text-center space-y-2">
+                  <div className="text-2xl">💳</div>
+                  <h3 className="font-medium text-gray-800">クレジットカード</h3>
+                  <p className="text-sm text-gray-600">即座に利用開始</p>
+                  {paymentMethod === 'card' && (
+                    <div className="text-blue-600 text-sm font-medium">✓ 選択中</div>
+                  )}
+                </div>
+              </button>
+
+              <button
+                onClick={() => setPaymentMethod('konbini')}
+                className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                  paymentMethod === 'konbini'
+                    ? 'border-green-500 bg-green-50 shadow-md'
+                    : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+                }`}
+              >
+                <div className="text-center space-y-2">
+                  <div className="text-2xl">🏪</div>
+                  <h3 className="font-medium text-gray-800">コンビニ決済</h3>
+                  <p className="text-sm text-gray-600">3日以内にお支払い</p>
+                  {paymentMethod === 'konbini' && (
+                    <div className="text-green-600 text-sm font-medium">✓ 選択中</div>
+                  )}
+                </div>
+              </button>
+
+              <button
+                onClick={() => setPaymentMethod('both')}
+                className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                  paymentMethod === 'both'
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+                }`}
+              >
+                <div className="text-center space-y-2">
+                  <div className="text-2xl">🔄</div>
+                  <h3 className="font-medium text-gray-800">どちらでも</h3>
+                  <p className="text-sm text-gray-600">決済時に選択</p>
+                  {paymentMethod === 'both' && (
+                    <div className="text-purple-600 text-sm font-medium">✓ 選択中</div>
+                  )}
+                </div>
+              </button>
+            </div>
+
+            {/* 決済方法の説明 */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+              <h4 className="font-medium text-gray-800 mb-2">📝 決済方法について</h4>
+              <div className="space-y-2 text-sm text-gray-600">
+                {paymentMethod === 'card' && (
+                  <div>
+                    <p>• Visa、Mastercard、JCB、American Express対応</p>
+                    <p>• 決済完了後、即座にプレミアム機能をご利用いただけます</p>
+                    <p>• 自動更新でお支払いの手間がありません</p>
+                  </div>
+                )}
+                {paymentMethod === 'konbini' && (
+                  <div>
+                    <p>• セブン-イレブン、ローソン、ファミリーマート等で支払い可能</p>
+                    <p>• 支払い期限は3日間です</p>
+                    <p>• 支払い確認後、プレミアム機能をご利用いただけます</p>
+                    <p className="text-orange-600">⚠️ 単発決済のため、手動更新が必要です</p>
+                  </div>
+                )}
+                {paymentMethod === 'both' && (
+                  <div>
+                    <p>• 決済画面でクレジットカードまたはコンビニ決済を選択できます</p>
+                    <p>• クレジットカードの場合は自動更新、コンビニの場合は単発決済</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

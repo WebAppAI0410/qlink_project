@@ -45,6 +45,20 @@ export function AdBanner({ size, position, isPremium = false, className = '' }: 
   const [currentAd, setCurrentAd] = useState(mockAds[0]);
   const [isVisible, setIsVisible] = useState(true);
 
+  useEffect(() => {
+    // プレミアムユーザーには広告を表示しない場合、useEffectも実行しない
+    if (isPremium) {
+      return;
+    }
+
+    // 30秒ごとに広告を切り替え
+    const interval = setInterval(() => {
+      setCurrentAd(mockAds[Math.floor(Math.random() * mockAds.length)]);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isPremium]);
+
   // プレミアムユーザーには広告を表示しない
   if (isPremium) {
     return null;
@@ -54,15 +68,6 @@ export function AdBanner({ size, position, isPremium = false, className = '' }: 
   if (!isVisible) {
     return null;
   }
-
-  useEffect(() => {
-    // 30秒ごとに広告を切り替え
-    const interval = setInterval(() => {
-      setCurrentAd(mockAds[Math.floor(Math.random() * mockAds.length)]);
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const sizeClasses = {
     small: 'h-20 text-xs',

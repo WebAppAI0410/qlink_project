@@ -64,6 +64,12 @@ export default function Header({ user }: { user: User | null }) {
                 🏠 ホーム
               </Link>
               <Link 
+                href="/protected/questions/new" 
+                className="flex items-center gap-1 text-green-600 hover:text-green-700 font-medium transition-all duration-200 hover:scale-105 transform px-3 py-1 rounded-xl hover:bg-green-50"
+              >
+                ✍️ 質問作成
+              </Link>
+              <Link 
                 href="/protected/profile" 
                 className="text-gray-600 hover:text-sky-600 font-medium transition-colors duration-200 hover:scale-105 transform"
               >
@@ -75,63 +81,74 @@ export default function Header({ user }: { user: User | null }) {
         
         <div className="flex items-center gap-4">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:scale-110 transition-transform duration-200">
-                  <Avatar className="h-10 w-10 border-2 border-white shadow-md">
-                    <AvatarImage src={profile?.profile_pic_url || ''} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-sky-400 text-white font-medium">
-                      {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase() || '😊'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-md border border-blue-100 shadow-xl rounded-2xl p-2">
-                <div className="px-3 py-2 text-sm">
-                  <p className="font-medium text-gray-800">
-                    {profile?.display_name || profile?.username || 'ユーザー'}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {user.email}
-                  </p>
-                </div>
-                <DropdownMenuSeparator className="bg-blue-100" />
-                <DropdownMenuItem asChild className="rounded-xl hover:bg-blue-50 cursor-pointer">
-                  <Link href="/protected/profile" className="flex items-center gap-2">
-                    <span>👤</span> プロフィール
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="rounded-xl hover:bg-sky-50 cursor-pointer">
-                  <Link href="/dashboard" className="flex items-center gap-2">
-                    <span>🏠</span> ホーム
-                  </Link>
-                </DropdownMenuItem>
-                {isPremium ? (
-                  <DropdownMenuItem asChild className="rounded-xl hover:bg-yellow-50 cursor-pointer">
-                    <Link href="/premium" className="flex items-center gap-2 text-yellow-600">
-                      <Crown className="w-4 h-4" /> プレミアム管理
+            <div className="flex items-center gap-3">
+              {/* モバイル用質問作成ボタン */}
+              <Button 
+                asChild 
+                size="sm"
+                className="md:hidden bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-md transition-all duration-200 hover:scale-105"
+              >
+                <Link href="/protected/questions/new">✍️</Link>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:scale-110 transition-transform duration-200">
+                    <Avatar className="h-10 w-10 border-2 border-white shadow-md">
+                      <AvatarImage src={profile?.profile_pic_url || ''} />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-sky-400 text-white font-medium">
+                        {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase() || '😊'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-md border border-blue-100 shadow-xl rounded-2xl p-2">
+                  <div className="px-3 py-2 text-sm">
+                    <p className="font-medium text-gray-800">
+                      {profile?.display_name || profile?.username || 'ユーザー'}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                  <DropdownMenuSeparator className="bg-blue-100" />
+                  <DropdownMenuItem asChild className="rounded-xl hover:bg-blue-50 cursor-pointer">
+                    <Link href="/protected/profile" className="flex items-center gap-2">
+                      <span>👤</span> プロフィール
                     </Link>
                   </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem asChild className="rounded-xl hover:bg-yellow-50 cursor-pointer">
-                    <Link href="/premium" className="flex items-center gap-2 text-yellow-600 font-medium">
-                      <Crown className="w-4 h-4" /> プレミアムにアップグレード
+                  <DropdownMenuItem asChild className="rounded-xl hover:bg-sky-50 cursor-pointer">
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <span>🏠</span> ホーム
                     </Link>
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild className="rounded-xl hover:bg-gray-50 cursor-pointer">
-                  <Link href="/settings" className="flex items-center gap-2">
-                    <span>⚙️</span> 設定
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-blue-100" />
-                <DropdownMenuItem asChild className="rounded-xl hover:bg-red-50 cursor-pointer text-red-600">
-                  <Link href="/logout" prefetch={false} className="flex items-center gap-2">
-                    <span>👋</span> ログアウト
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {isPremium ? (
+                    <DropdownMenuItem asChild className="rounded-xl hover:bg-yellow-50 cursor-pointer">
+                      <Link href="/premium" className="flex items-center gap-2 text-yellow-600">
+                        <Crown className="w-4 h-4" /> プレミアム管理
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem asChild className="rounded-xl hover:bg-yellow-50 cursor-pointer">
+                      <Link href="/premium" className="flex items-center gap-2 text-yellow-600 font-medium">
+                        <Crown className="w-4 h-4" /> プレミアムにアップグレード
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem asChild className="rounded-xl hover:bg-gray-50 cursor-pointer">
+                    <Link href="/settings" className="flex items-center gap-2">
+                      <span>⚙️</span> 設定
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-blue-100" />
+                  <DropdownMenuItem asChild className="rounded-xl hover:bg-red-50 cursor-pointer text-red-600">
+                    <Link href="/logout" prefetch={false} className="flex items-center gap-2">
+                      <span>👋</span> ログアウト
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <div className="flex gap-3">
               <Button 
