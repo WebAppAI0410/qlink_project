@@ -28,21 +28,23 @@ This is a **Japanese anonymous Q&A platform** built with Next.js 15 and Supabase
 #### Environment Configuration
 - Uses **Supabase Edge Functions** for environment variable management instead of .env.local
 - Environment variables are managed via `functions/env-config/index.ts` (Deno-based edge function)
-- Includes configurations for Stripe, OAuth providers, and future API integrations
+- Client-side env access through `utils/env.ts`
+- Includes configurations for Stripe, OAuth providers, and API integrations
 
 #### Authentication & Routing
 - Supabase Auth with SSR support (`@supabase/ssr`)
 - Custom middleware for session management (`middleware.ts`)
 - Protected routes under `/app/protected/`
 - Social login support (Google, Twitter OAuth)
+- Auth webhook at `/api/auth/webhook/` handles profile creation
 
 #### Database Schema
 Core entities:
 - **profiles**: User profiles with premium status and auth source tracking
 - **questions**: Questions with short_id for sharing, open/closed status
 - **answers**: Anonymous answers linked to questions
-- **notifications**: System notifications for users
-- **user_settings**: User preferences and configuration
+- **moderation_logs**: AI moderation tracking
+- **user_subscriptions**: Premium subscription management
 
 #### Component Organization
 - `/components/ui/` - Base UI components (shadcn/ui)
@@ -59,7 +61,31 @@ Core entities:
 - `/app/api/auth/webhook/` - Auth webhooks
 - `/app/api/stripe/` - Payment processing
 - `/app/api/og/` - Open Graph image generation
-- `/app/api/test-moderation/` - Content moderation
+- `/app/api/test-moderation/` - Content moderation testing
+
+### Non-Obvious Implementation Details
+
+#### Moderation System
+- Primary: Google Perspective API (requires PERSPECTIVE_API_KEY)
+- Fallback: Keyword-based filtering
+- Questions are generally allowed, answers auto-hidden if inappropriate
+- Sensitive content flagged but not blocked
+
+#### Short ID System
+- Database triggers generate 7-character unique IDs for questions
+- Used for shareable URLs (`/q/[shortId]`)
+- Prevents exposure of internal UUIDs
+
+#### Premium Features
+- Character limits: Free (200/100), Premium (10,000/1,000)
+- Image uploads (premium only, up to 4 images)
+- Ad-free experience
+- Controlled via `usePremium` hook
+
+#### Server/Client Component Strategy
+- Server components for data fetching (pages, layouts)
+- Client components for interactivity (forms, buttons)
+- Server actions for mutations
 
 ### Development Guidelines
 
@@ -68,7 +94,7 @@ The project follows specific development patterns defined in `.cursor/rules/qlin
 - Respect existing code flow and project-specific conventions
 - Focus on Next.js and Supabase expertise
 - Write concise, clear logic without redundant code
-- Always reference `/doc/` folder for project design requirements before implementing
+- Always reference `/doc/` folder for project design requirements
 - Use Supabase Edge Functions for environment variables, not .env.local
 - Confirm implementation details before proceeding if less than 95% confident
 
@@ -78,10 +104,10 @@ The project follows specific development patterns defined in `.cursor/rules/qlin
 - `/utils/supabase/` - Database client configurations
 - `middleware.ts` - Authentication middleware setup
 
-### Premium Features
-The application includes Stripe-based premium subscriptions with enhanced features for paying users.
-
-### Internationalization
-Primary language is Japanese (`ja`), with English support planned.
+### Common Gotchas
+- Twitter OAuth: ~30% of users lack email addresses, causing auth errors
+- Environment variables: Must use Supabase Edge Functions, not .env.local
+- Moderation: Requires PERSPECTIVE_API_KEY for best results
+- Database: Run migrations in order, starting with 001_initial_schema.sql
 
 特に、エラーが発生してそれを解決しようとしている時は、よく調べてよくThinkしてメタ認知を働かせてコードの修正を行ってください。95%の確証を得るまでsequential thinkingを行ってください。
