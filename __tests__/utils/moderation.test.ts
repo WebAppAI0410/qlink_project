@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll, afterEach, afterAll } from 'vitest'
 import { moderateContent } from '@/utils/moderation'
 
 // MSWを使用してAPIモックを設定
@@ -19,7 +19,7 @@ describe('moderateContent', () => {
   it('should allow appropriate content', async () => {
     const result = await moderateContent('これは適切なコンテンツです')
     expect(result.isAppropriate).toBe(true)
-    expect(result.scores).toBeDefined()
+    expect(result.severity).toBe('low')
   })
 
   it('should flag inappropriate content with keywords', async () => {
@@ -54,6 +54,7 @@ describe('moderateContent', () => {
     )
 
     const result = await moderateContent('test content')
-    expect(result.scores?.toxicity).toBe(0.8)
+    expect(result.isAppropriate).toBe(false)
+    expect(result.confidence).toBeGreaterThan(0.5)
   })
 })
