@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+// import { cookies } from "next/headers"; // Currently unused
 import { revalidatePath } from "next/cache";
 
 // プロフィール更新アクション
