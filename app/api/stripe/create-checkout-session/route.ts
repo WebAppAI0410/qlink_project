@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import Stripe from 'stripe';
 import { SERVER_ENV } from '@/utils/env';
-import { getAppUrl } from '@/utils/env-helpers';
 
 // Stripeキーが設定されていない場合はダミーキーを使用（開発環境用）
 const stripeKey = SERVER_ENV.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build';

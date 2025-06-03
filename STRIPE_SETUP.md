@@ -35,7 +35,7 @@ QlinkのプレミアムプランはStripeを使用した月額・半年額のサ
 
 Vercelダッシュボードで以下を設定：
 
-```
+```bash
 STRIPE_SECRET_KEY=sk_test_your_secret_key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
