@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { testModerationAPI, checkEnvironmentVariables } from '@/utils/test-moderation';
+import { testModerationAPI } from '@/utils/test-moderation';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // 環境変数確認
     console.log('=== 環境変数確認 ===');

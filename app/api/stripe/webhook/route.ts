@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import Stripe from 'stripe';
+import { SERVER_ENV } from '@/utils/env';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {  apiVersion: '2025-04-30.basil',});
+const stripe = new Stripe(SERVER_ENV.STRIPE_SECRET_KEY || 'sk_test_dummy', {  apiVersion: '2025-04-30.basil',});
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_dummy';
+const webhookSecret = SERVER_ENV.STRIPE_WEBHOOK_SECRET || 'whsec_dummy';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
