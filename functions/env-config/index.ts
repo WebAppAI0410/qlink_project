@@ -33,7 +33,8 @@ Deno.serve(async (req: Request) => {
     
     // アプリケーション設定
     NEXTAUTH_SECRET: Deno.env.get('NEXTAUTH_SECRET') || '',
-    NEXTAUTH_URL: Deno.env.get('NEXTAUTH_URL') || 'http://localhost:3000',
+    NEXTAUTH_URL: Deno.env.get('NEXTAUTH_URL') || 'https://qlink-project.vercel.app',
+    NEXT_PUBLIC_SITE_URL: Deno.env.get('NEXT_PUBLIC_SITE_URL') || 'https://qlink-project.vercel.app',
     
     // 外部API設定（将来の拡張用）
     OPENAI_API_KEY: Deno.env.get('OPENAI_API_KEY') || '',

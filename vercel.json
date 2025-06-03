@@ -1,0 +1,10 @@
+{
+  "env": {
+    "NEXT_PUBLIC_SITE_URL": "@vercel-url"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SITE_URL": "https://qlink-project.vercel.app"
+    }
+  }
+}

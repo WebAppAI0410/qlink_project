@@ -9,6 +9,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdBanner } from "@/components/ui/ad-banner";
 import { Metadata } from "next";
+import { getOgImageUrl } from "@/utils/env-helpers";
 
 // 動的OG画像を使用するメタデータ生成
 export async function generateMetadata({ params }: {  
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: {
   const { shortId } = await params;    
   
   // Edge Function生成の画像URLを設定  
-  const ogImageUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og/${shortId}`;  
+  const ogImageUrl = getOgImageUrl(shortId);  
   return {    
     title: `質問 - Qlink`,    
     description: "匿名回答募集プラットフォーム",    

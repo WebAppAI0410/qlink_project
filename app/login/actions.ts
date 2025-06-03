@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { getCallbackUrl } from '@/utils/env-helpers'
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
@@ -34,7 +35,7 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+      emailRedirectTo: getCallbackUrl(),
     },
   })
   

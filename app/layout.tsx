@@ -4,10 +4,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/layout/header";
 import { createClient } from '@/utils/supabase/server'
+import { getAppUrl } from "@/utils/env-helpers";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const defaultUrl = getAppUrl();
 
 const inter = Inter({ subsets: ["latin"] });
 

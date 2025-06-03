@@ -1,5 +1,7 @@
 // Next.js アプリケーション用環境変数管理
 
+import { getAppUrl } from './env-helpers'
+
 export const ENV = {
   // Supabase設定
   SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bescdalknyjugpdorfay.supabase.co',
@@ -9,7 +11,7 @@ export const ENV = {
   STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
   
   // アプリケーション設定
-  APP_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  APP_URL: getAppUrl(),
 } as const;
 
 // サーバー側専用の環境変数

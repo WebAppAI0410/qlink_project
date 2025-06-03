@@ -19,8 +19,15 @@ export function SocialLoginForm({ provider }: { provider: "google" | "twitter" }
       const currentUrl = window.location.origin;
       const redirectUrl = `${currentUrl}/auth/callback`;
       
+      console.log('=== 認証デバッグ情報 ===');
       console.log('リダイレクトURL (アプリケーション側):', redirectUrl);
       console.log('サイトオリジン:', currentUrl);
+      console.log('環境:', {
+        NODE_ENV: process.env.NODE_ENV,
+        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+        VERCEL_URL: process.env.VERCEL_URL,
+        hostname: window.location.hostname
+      });
       
       const { data, error: signInError } = await supabase.auth.signInWithOAuth({
         provider,
