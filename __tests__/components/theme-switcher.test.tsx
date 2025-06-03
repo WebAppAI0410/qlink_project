@@ -5,7 +5,8 @@ import { useTheme } from 'next-themes'
 
 // next-themesのモック
 vi.mock('next-themes', () => ({
-  useTheme: vi.fn()
+  useTheme: vi.fn(),
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => children
 }))
 
 describe('ThemeSwitcher Component', () => {
