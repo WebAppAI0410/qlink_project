@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { usePremium } from '@/lib/hooks/use-premium'
+import { usePremium, getCharacterLimit, checkPremiumFeature } from '@/lib/hooks/use-premium'
 import { createMockSupabaseClient } from '@/test-utils/supabase-mock'
 
 // Supabaseクライアントのモック
@@ -17,12 +17,7 @@ describe('usePremium Hook', () => {
   })
 
   it('should return default state when user is not logged in', async () => {
-    mockSupabase.auth.getUser = vi.fn().mockResolvedValue({
-      data: { user: null },
-      error: null
-    })
-
-    const { result } = renderHook(() => usePremium())
+    const { result } = renderHook(() => usePremium(null))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -30,36 +25,38 @@ describe('usePremium Hook', () => {
 
     expect(result.current.isPremium).toBe(false)
     expect(result.current.subscription).toBeNull()
-    expect(result.current.getCharacterLimit('question')).toBe(200)
-    expect(result.current.getCharacterLimit('answer')).toBe(100)
-    expect(result.current.canUploadImages()).toBe(false)
-    expect(result.current.canCreateUnlimitedQuestions()).toBe(false)
-    expect(result.current.hasAdFreeExperience()).toBe(false)
+    expect(getCharacterLimit(false, 'question')).toBe(100)
+    expect(getCharacterLimit(false, 'answer')).toBe(500)
+    expect(checkPremiumFeature(false, 'analytics')).toBe(false)
+    expect(checkPremiumFeature(false, 'ad_free')).toBe(false)
   })
 
   it('should fetch premium status for logged in user', async () => {
-    const mockUser = { id: 'test-user-id' }
+    const mockUser = { id: 'test-user-id', email: 'test@example.com' } as any
     const mockSubscription = {
       id: 'sub_123',
       status: 'active',
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      premium_plan: {
+        id: 'plan_123',
+        name: 'プレミアム',
+        price_monthly: 400,
+        price_yearly: 4000,
+        features: ['広告なし', '画像アップロード']
+      }
     }
-
-    mockSupabase.auth.getUser = vi.fn().mockResolvedValue({
-      data: { user: mockUser },
-      error: null
-    })
 
     mockSupabase.from = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: mockSubscription,
         error: null
       })
     })
 
-    const { result } = renderHook(() => usePremium())
+    const { result } = renderHook(() => usePremium(mockUser))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -67,63 +64,31 @@ describe('usePremium Hook', () => {
 
     expect(result.current.isPremium).toBe(true)
     expect(result.current.subscription).toEqual(mockSubscription)
-    expect(result.current.getCharacterLimit('question')).toBe(10000)
-    expect(result.current.getCharacterLimit('answer')).toBe(1000)
-    expect(result.current.canUploadImages()).toBe(true)
-    expect(result.current.canCreateUnlimitedQuestions()).toBe(true)
-    expect(result.current.hasAdFreeExperience()).toBe(true)
+    expect(getCharacterLimit(true, 'question')).toBe(1000)
+    expect(getCharacterLimit(true, 'answer')).toBe(2000)
+    expect(checkPremiumFeature(true, 'analytics')).toBe(true)
+    expect(checkPremiumFeature(true, 'ad_free')).toBe(true)
   })
 
   it('should handle expired subscription', async () => {
-    const mockUser = { id: 'test-user-id' }
+    const mockUser = { id: 'test-user-id', email: 'test@example.com' } as any
     const expiredSubscription = {
       id: 'sub_123',
       status: 'active',
       current_period_end: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // 昨日で期限切れ
     }
 
-    mockSupabase.auth.getUser = vi.fn().mockResolvedValue({
-      data: { user: mockUser },
-      error: null
-    })
-
     mockSupabase.from = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: expiredSubscription,
-        error: null
-      })
-    })
-
-    const { result } = renderHook(() => usePremium())
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false)
-    })
-
-    expect(result.current.isPremium).toBe(false)
-    expect(result.current.subscription).toEqual(expiredSubscription)
-  })
-
-  it('should handle database errors gracefully', async () => {
-    const mockUser = { id: 'test-user-id' }
-
-    mockSupabase.auth.getUser = vi.fn().mockResolvedValue({
-      data: { user: mockUser },
-      error: null
-    })
-
-    mockSupabase.from = vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: null,
-        error: { message: 'Database error' }
+        error: { code: 'PGRST116' } // No rows found
       })
     })
 
-    const { result } = renderHook(() => usePremium())
+    const { result } = renderHook(() => usePremium(mockUser))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -131,5 +96,29 @@ describe('usePremium Hook', () => {
 
     expect(result.current.isPremium).toBe(false)
     expect(result.current.subscription).toBeNull()
+  })
+
+  it('should handle database errors gracefully', async () => {
+    const mockUser = { id: 'test-user-id', email: 'test@example.com' } as any
+
+    mockSupabase.from = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database error' }
+      })
+    })
+
+    const { result } = renderHook(() => usePremium(mockUser))
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.isPremium).toBe(false)
+    expect(result.current.subscription).toBeNull()
+    expect(result.current.error).toBe('Database error')
   })
 })
