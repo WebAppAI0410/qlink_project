@@ -19,25 +19,26 @@ describe('moderateContent', () => {
   it('should allow appropriate content', async () => {
     const result = await moderateContent('これは適切なコンテンツです')
     expect(result.isAppropriate).toBe(true)
-    expect(result.scores).toBeDefined()
+    expect(result.reason).toBe('')
   })
 
   it('should flag inappropriate content with keywords', async () => {
     const result = await moderateContent('バカ野郎')
     expect(result.isAppropriate).toBe(false)
-    expect(result.reason).toContain('Inappropriate language detected')
+    expect(result.reason).toContain('不適切な表現')
   })
 
   it('should handle empty content', async () => {
     const result = await moderateContent('')
-    expect(result.isAppropriate).toBe(true)
+    expect(result.isAppropriate).toBe(false)
+    expect(result.reason).toBe('回答が短すぎます')
   })
 
   it('should handle very long content', async () => {
     const longContent = 'あ'.repeat(10001)
     const result = await moderateContent(longContent)
     expect(result.isAppropriate).toBe(false)
-    expect(result.reason).toContain('Content too long')
+    expect(result.reason).toBe('回答が長すぎます')
   })
 
   it('should use Perspective API when available', async () => {
@@ -53,7 +54,10 @@ describe('moderateContent', () => {
       })
     )
 
+    process.env.PERSPECTIVE_API_KEY = 'test-key'
     const result = await moderateContent('test content')
-    expect(result.scores?.toxicity).toBe(0.8)
+    expect(result.isAppropriate).toBe(false)
+    expect(result.confidence).toBeCloseTo(0.8)
+    expect(result.severity).toBe('medium')
   })
 })
